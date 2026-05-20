@@ -201,9 +201,9 @@ select option{background:var(--bg2)}
     </div>
 
     <div class="sb-sec">
-      <div class="sb-sec-t"><i class="ti ti-mail"></i> Resend — Correos reales</div>
-      <div class="sb-f"><label>API Key</label><input type="password" id="cfg-rk" placeholder="re_xxxxxxxxxxxxxxxxxxxx"></div>
-      <div class="sb-f"><label>Correo remitente</label><input id="cfg-from" placeholder="noreply@tudominio.com  o  onboarding@resend.dev"><div class="sb-hint">Sin dominio verificado usa onboarding@resend.dev</div></div>
+      <div class="sb-sec-t"><i class="ti ti-mail"></i> Gmail — Correos reales</div>
+      <div class="sb-f"><label>Tu correo Gmail</label><input id="cfg-guser" placeholder="jheyston.omar@gmail.com"></div>
+      <div class="sb-f"><label>Contraseña de aplicación Gmail</label><input type="password" id="cfg-gpass" placeholder="xxxx xxxx xxxx xxxx"><div class="sb-hint">No es tu contraseña normal. Ve a myaccount.google.com → Seguridad → Contraseñas de aplicación</div></div>
     </div>
 
     <div class="sb-sec">
@@ -527,7 +527,7 @@ select option{background:var(--bg2)}
 
 <script>
 // ── STATE ──
-let CFG={sbUrl:'',sbKey:'',resendKey:'',fromEmail:'',adminPw:'',cam1:'',cam2:'',pg:120,mg:10,demo:false};
+let CFG={sbUrl:'',sbKey:'',gmailUser:'',gmailPass:'',adminPw:'',cam1:'',cam2:'',pg:120,mg:10,demo:false};
 let SB=null,reviewId=null,selFile=null,curFilter='todas';
 let PRINTERS=[{id:1,name:'Creality Hi #1',status:'idle',job:null,pr:0},{id:2,name:'Creality Hi #2',status:'idle',job:null,pr:0}];
 let INV=[{c:'#e5e5e5',n:'PLA Blanco',s:840},{c:'#111',n:'PLA Negro',s:620},{c:'#6b7280',n:'PLA Gris',s:410},{c:'#ef4444',n:'PLA Rojo',s:210},{c:'#3b82f6',n:'PLA Azul',s:380},{c:'#f59e0b',n:'ABS Negro',s:150}];
@@ -555,8 +555,8 @@ function cM(id){document.getElementById(id).classList.remove('open')}
 function saveConfig(){
   const url=document.getElementById('cfg-sbu').value.trim();
   const key=document.getElementById('cfg-sbk').value.trim();
-  const rk=document.getElementById('cfg-rk').value.trim();
-  const from=document.getElementById('cfg-from').value.trim();
+  const rk=document.getElementById('cfg-guser').value.trim();
+  const from=document.getElementById('cfg-gpass').value.trim();
   const pw=document.getElementById('cfg-pw').value;
   const c1=document.getElementById('cfg-c1').value.trim();
   const c2=document.getElementById('cfg-c2').value.trim();
@@ -564,7 +564,7 @@ function saveConfig(){
   if(!url||!key){st.textContent='Supabase URL y Key son obligatorios';st.className='sb-st err';return}
   if(!pw||pw.length<6){st.textContent='Contraseña mínimo 6 caracteres';st.className='sb-st err';return}
   st.textContent='Conectando...';st.className='sb-st';
-  CFG={sbUrl:url,sbKey:key,resendKey:rk,fromEmail:from||'onboarding@resend.dev',adminPw:pw,cam1:c1,cam2:c2,pg:120,mg:10,demo:false};
+  CFG={sbUrl:url,sbKey:key,gmailUser:rk,gmailPass:from,adminPw:pw,cam1:c1,cam2:c2,pg:120,mg:10,demo:false};
   localStorage.setItem('s3d',JSON.stringify(CFG));
   initSB();
   SB.from('solicitudes').select('id').limit(1).then(({error})=>{
@@ -846,29 +846,37 @@ async function sendEmail(id,tipo,custom=''){
   };
   const tpl=tpls[tipo];if(!tpl)return;
   if(!CFG.demo&&SB)await SB.from('notificaciones').insert({solicitud_id:String(id),tipo:tpl.sub,mensaje:tpl.sub});
-  if(!CFG.resendKey||CFG.demo){toast(CFG.demo?'Correo simulado (modo demo)':'Correo simulado (sin API Key)','i',s.email);return}
+  if(!CFG.gmailUser||!CFG.gmailPass||CFG.demo){
+    toast(CFG.demo?'Correo simulado (modo demo)':'Configura Gmail en ajustes','i',s.email);
+    return;
+  }
   try{
-    // Llamar a la función serverless de Vercel (evita el bloqueo CORS del navegador)
-    const endpoint='/api/send-email';
-    const r=await fetch(endpoint,{
+    const base=window.location.origin;
+    const r=await fetch(base+'/api/send-email',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
         to:s.email,
         subject:tpl.sub,
         html:tpl.html,
-        from:CFG.fromEmail||'onboarding@resend.dev',
-        apiKey:CFG.resendKey
+        gmailUser:CFG.gmailUser,
+        gmailPass:CFG.gmailPass
       })
     });
+    if(!r.ok){
+      const txt=await r.text();
+      toast('Error en función serverless','e',r.status+' — '+txt.substring(0,120));
+      return;
+    }
     const d=await r.json();
-    if(d.success||d.id){
+    if(d.success||d.messageId){
       toast('Correo enviado a '+s.email,'s',tpl.sub);
     } else {
-      toast('Error enviando correo','e',d.error||JSON.stringify(d));
+      toast('Error enviando','e',d.error||JSON.stringify(d).substring(0,120));
     }
   }catch(err){
-    toast('Error de red','e','Verifica que /api/send-email existe en Vercel · '+err.message);
+    const tried=window.location.origin+'/api/send-email';
+    toast('No se encontró la función','e',tried+' · '+err.message);
   }
 }
 
@@ -1044,8 +1052,8 @@ function apCam(n){
       CFG={...CFG,...c};
       document.getElementById('cfg-sbu').value=CFG.sbUrl||'';
       document.getElementById('cfg-sbk').value=CFG.sbKey||'';
-      document.getElementById('cfg-rk').value=CFG.resendKey||'';
-      document.getElementById('cfg-from').value=CFG.fromEmail||'';
+      document.getElementById('cfg-guser').value=CFG.gmailUser||'';
+      document.getElementById('cfg-gpass').value=CFG.gmailPass||'';
       document.getElementById('cfg-pw').value=CFG.adminPw||'';
       document.getElementById('cfg-c1').value=CFG.cam1||'';
       document.getElementById('cfg-c2').value=CFG.cam2||'';
