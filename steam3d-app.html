@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STEAM 3D · Salón 117 · UIS</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<style>
+:root{
+  --bg:#07090f;--bg2:#0d1117;--bg3:#161b26;--bg4:#1c2333;
+  --accent:#00c8f0;--a2:#7c3aed;--a3:#10b981;--warn:#f59e0b;--danger:#ef4444;
+  --text:#e2e8f0;--t2:#94a3b8;--t3:#64748b;--t4:#3f4f67;
+  --border:rgba(255,255,255,0.07);--border2:rgba(0,200,240,0.3);
+  --r:12px;--r2:8px;--font:'Space Grotesk',sans-serif;--mono:'JetBrains Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 60% 40% at 20% 0%,rgba(0,200,240,0.05) 0%,transparent 60%),radial-gradient(ellipse 50% 40% at 80% 100%,rgba(124,58,237,0.05) 0%,transparent 60%);pointer-events:none;z-index:0}
+
+/* SETUP */
+#setup{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:20px;overflow-y:auto}
+.sb{width:100%;max-width:500px;padding:20px 0}
+.sb-logo{display:flex;align-items:center;gap:14px;margin-bottom:28px}
+.sb-icon{width:52px;height:52px;background:linear-gradient(135deg,var(--accent),var(--a2));border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:26px;color:#fff;flex-shrink:0}
+.sb-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:24px}
+.sb-sec{margin-bottom:20px}
+.sb-sec-t{font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.sb-f{margin-bottom:11px}
+.sb-f label{font-size:12px;font-weight:600;color:var(--t2);display:block;margin-bottom:4px}
+.sb-f input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r2);padding:9px 12px;color:var(--text);font-family:var(--mono);font-size:11px;outline:none;transition:border-color .15s}
+.sb-f input:focus{border-color:var(--accent)}
+.sb-f input::placeholder{color:var(--t4)}
+.sb-hint{font-size:10px;color:var(--t3);margin-top:3px;line-height:1.5}
+.sb-btn{width:100%;padding:12px;border-radius:var(--r2);border:none;background:var(--accent);color:var(--bg);font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;margin-top:4px;transition:all .15s}
+.sb-btn:hover{background:#00afd4}
+.sb-st{font-size:12px;text-align:center;margin-top:10px;min-height:18px}
+.sb-st.ok{color:var(--a3)}.sb-st.err{color:var(--danger)}
+.sb-skip{font-size:12px;color:var(--t3);text-align:center;margin-top:10px;cursor:pointer;text-decoration:underline}
+
+/* NAV */
+nav{position:sticky;top:0;z-index:100;background:rgba(7,9,15,0.94);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 20px;display:flex;align-items:center;height:58px;gap:6px;flex-wrap:nowrap}
+.nb{display:flex;align-items:center;gap:10px;margin-right:auto;text-decoration:none;flex-shrink:0}
+.nb-ic{width:34px;height:34px;background:linear-gradient(135deg,var(--accent),var(--a2));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;color:#fff}
+.nb-t{font-size:13px;font-weight:700;color:var(--text);line-height:1.1}
+.nb-t span{color:var(--accent)}
+.nb-s{font-size:9px;color:var(--t3);font-family:var(--mono)}
+.vsw{display:flex;align-items:center;gap:3px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:3px;flex-shrink:0}
+.vb{padding:5px 11px;border-radius:7px;border:none;background:transparent;color:var(--t2);font-family:var(--font);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:5px;white-space:nowrap}
+.vb.aa{background:var(--bg2);color:var(--accent);border:1px solid var(--border2)}
+.vb.as{background:var(--bg2);color:var(--a3);border:1px solid rgba(16,185,129,.3)}
+.ndiv{width:1px;height:22px;background:var(--border);margin:0 4px;flex-shrink:0}
+.nt{padding:5px 10px;border-radius:var(--r2);border:none;background:transparent;color:var(--t2);font-family:var(--font);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:5px;white-space:nowrap}
+.nt:hover{background:var(--bg3);color:var(--text)}
+.nt.active{background:var(--bg3);color:var(--accent);border:1px solid var(--border2)}
+.nbg{background:var(--accent);color:var(--bg);font-size:10px;font-weight:700;padding:1px 5px;border-radius:10px;font-family:var(--mono)}
+.n-set{padding:5px 9px;border-radius:var(--r2);border:1px solid var(--border);background:transparent;color:var(--t2);cursor:pointer;transition:all .15s}
+.n-set:hover{border-color:var(--accent);color:var(--accent)}
+.db-pill{font-size:10px;font-family:var(--mono);padding:3px 8px;border-radius:6px;border:1px solid var(--border);color:var(--t3)}
+
+/* MAIN */
+.main{position:relative;z-index:1;padding:20px;max-width:1280px;margin:0 auto}
+.page{display:none}.page.active{display:block}
+
+/* CARDS */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:20px}
+.card-c{border-color:var(--border2)}.card-g{border-color:rgba(16,185,129,.25)}
+.ct{font-size:14px;font-weight:700;display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+
+/* GRIDS */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.g5{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+
+/* STAT */
+.sc{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:16px}
+.sl{font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.9px;margin-bottom:7px}
+.sv{font-size:26px;font-weight:700;font-family:var(--mono);line-height:1}
+.cy{color:var(--accent)}.cp{color:var(--a2)}.cg{color:var(--a3)}.cw{color:var(--warn)}.cd{color:var(--danger)}
+.sd{font-size:11px;color:var(--t3);margin-top:5px}
+
+/* TABLE */
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{text-align:left;padding:9px 12px;color:var(--t3);font-weight:600;font-size:10px;text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid var(--border)}
+.tbl td{padding:11px 12px;border-bottom:1px solid var(--border);color:var(--t2);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:rgba(255,255,255,.015)}
+.te{text-align:center;color:var(--t3)!important;padding:28px!important}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:20px;font-size:10px;font-weight:700;font-family:var(--mono)}
+.br{background:rgba(124,58,237,.18);color:#a78bfa}
+.bp2{background:rgba(245,158,11,.15);color:var(--warn)}
+.bi{background:rgba(0,200,240,.15);color:var(--accent)}
+.bg3{background:rgba(16,185,129,.15);color:var(--a3)}
+.bd2{background:rgba(100,116,139,.12);color:var(--t2)}
+.bc{background:rgba(239,68,68,.12);color:var(--danger)}
+
+/* FORMS */
+label{font-size:12px;font-weight:600;color:var(--t2);display:block;margin-bottom:5px}
+input,select,textarea{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r2);padding:9px 12px;color:var(--text);font-family:var(--font);font-size:13px;transition:border-color .15s;outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--accent)}
+select option{background:var(--bg2)}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.ff{margin-bottom:14px}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:var(--r2);font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .15s;white-space:nowrap}
+.btp{background:var(--accent);color:var(--bg)}.btp:hover{background:#00afd4}
+.bts{background:var(--bg3);border:1px solid var(--border);color:var(--text)}.bts:hover{border-color:var(--accent);color:var(--accent)}
+.btg{background:var(--a3);color:var(--bg)}.btg:hover{background:#0da36e}
+.btd{background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);color:var(--danger)}
+.btw{background:rgba(245,158,11,.15);border:1px solid rgba(245,158,11,.3);color:var(--warn)}
+.btpu{background:var(--a2);color:#fff}.btpu:hover{background:#6d28d9}
+.sm{padding:5px 11px;font-size:12px}.ic{padding:7px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+
+/* MODAL */
+.mo{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.8);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:20px}
+.mo.open{display:flex}
+.mdl{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:24px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto}
+.mh{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.mt{font-size:16px;font-weight:700}
+
+/* TOAST */
+#tc{position:fixed;top:68px;right:16px;z-index:999;display:flex;flex-direction:column;gap:8px;pointer-events:none;width:300px}
+.toast{background:var(--bg2);border:1px solid var(--border);border-left:3px solid var(--a3);border-radius:var(--r2);padding:12px 14px;display:flex;align-items:flex-start;gap:10px;font-size:13px;animation:tIn .3s ease,tOut .3s 3.7s ease forwards;pointer-events:all}
+.toast.w{border-left-color:var(--warn)}.toast.e{border-left-color:var(--danger)}.toast.i{border-left-color:var(--accent)}
+@keyframes tIn{from{transform:translateX(120%);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes tOut{from{opacity:1}to{opacity:0}}
+
+/* MISC */
+.pw{background:var(--bg4);border-radius:4px;height:5px;overflow:hidden;margin-top:5px}
+.pb{height:100%;border-radius:4px;transition:width .6s ease}
+.pc{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:16px}
+.pc.printing{border-color:rgba(0,200,240,.4)}.pc.idle{border-color:rgba(16,185,129,.3)}.pc.error{border-color:rgba(239,68,68,.35)}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:5px}
+.di{background:var(--a3)}.dp{background:var(--accent);animation:bl 1.5s infinite}.de{background:var(--danger)}
+@keyframes bl{0%,100%{opacity:1;box-shadow:0 0 5px var(--accent)}50%{opacity:.4;box-shadow:none}}
+.cam-w{background:#000;border-radius:var(--r2);overflow:hidden;aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;position:relative;border:1px solid var(--border)}
+.cam-w img{width:100%;height:100%;object-fit:cover}
+.cam-ov{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;color:var(--t3);text-align:center;padding:20px}
+.dz{border:2px dashed var(--border);border-radius:var(--r);padding:28px 20px;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg3)}
+.dz:hover,.dz.drag{border-color:var(--accent);background:rgba(0,200,240,.04)}
+.dz.hf{border-color:var(--a3);background:rgba(16,185,129,.04)}
+.tl{position:relative;padding-left:22px}
+.tl::before{content:'';position:absolute;left:6px;top:8px;bottom:8px;width:2px;background:var(--border)}
+.tli{position:relative;margin-bottom:14px}
+.tld{position:absolute;left:-22px;top:4px;width:10px;height:10px;border-radius:50%;background:var(--t3);border:2px solid var(--bg2)}
+.tld.done{background:var(--a3)}.tld.active{background:var(--accent);box-shadow:0 0 8px var(--accent)}
+.tlt{font-size:13px;font-weight:600}.tls{font-size:11px;color:var(--t3);font-family:var(--mono);margin-top:1px}
+.qp{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;font-family:var(--mono);flex-shrink:0}
+.q1{background:rgba(245,158,11,.15);color:var(--warn);border:1px solid rgba(245,158,11,.3)}
+.q2{background:rgba(0,200,240,.1);color:var(--accent);border:1px solid rgba(0,200,240,.2)}
+.qn{background:var(--bg3);color:var(--t2);border:1px solid var(--border)}
+.hero{background:linear-gradient(135deg,rgba(0,200,240,.07),rgba(124,58,237,.07));border:1px solid var(--border2);border-radius:var(--r);padding:22px;margin-bottom:20px;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.hero-ic{width:52px;height:52px;background:linear-gradient(135deg,var(--accent),var(--a2));border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;color:#fff;flex-shrink:0}
+.uis{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r2);flex-shrink:0}
+.uis-c{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#c00,#800);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;color:#fff;flex-shrink:0}
+.tb{display:flex;gap:3px;margin-bottom:16px;background:var(--bg3);padding:3px;border-radius:9px;width:fit-content}
+.tbb{padding:5px 13px;border-radius:6px;border:none;background:transparent;color:var(--t2);font-family:var(--font);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s}
+.tbb.active{background:var(--bg2);color:var(--text);border:1px solid var(--border)}
+.pi{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg3);border-radius:var(--r2);border:1px solid var(--border);margin-bottom:6px}
+.pi.top{border-color:rgba(245,158,11,.4);background:rgba(245,158,11,.04)}
+.pi.pnow{border-color:rgba(0,200,240,.4);background:rgba(0,200,240,.04)}
+.ni{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)}
+.ni:last-child{border-bottom:none}
+.ni-ic{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.spin{width:18px;height:18px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:sp .7s linear infinite;display:inline-block;vertical-align:middle}
+@keyframes sp{to{transform:rotate(360deg)}}
+.sec-t{font-size:20px;font-weight:700;margin-bottom:4px}
+.sec-s{font-size:13px;color:var(--t2);margin-bottom:20px}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+@media(max-width:900px){.g2,.g3,.g4,.g5{grid-template-columns:1fr}nav{flex-wrap:wrap;height:auto;padding:8px;gap:4px}.fr{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div id="tc"></div>
+
+<!-- SETUP SCREEN -->
+<div id="setup">
+<div class="sb">
+  <div class="sb-logo">
+    <div class="sb-icon"><i class="ti ti-3d-cube-sphere"></i></div>
+    <div>
+      <div style="font-size:22px;font-weight:700">STEAM <span style="color:var(--accent)">3D</span> Manager</div>
+      <div style="font-size:12px;color:var(--t2);margin-top:2px">Salón 117 · Universidad Industrial de Santander</div>
+    </div>
+  </div>
+  <div class="sb-card">
+    <div style="font-size:15px;font-weight:700;margin-bottom:4px">Configuración inicial</div>
+    <div style="font-size:12px;color:var(--t2);margin-bottom:20px">Tus credenciales se guardan solo en este navegador (localStorage). Nunca se envían a terceros.</div>
+
+    <div class="sb-sec">
+      <div class="sb-sec-t"><i class="ti ti-database"></i> Supabase — Base de datos</div>
+      <div class="sb-f"><label>Project URL</label><input id="cfg-sbu" placeholder="https://xxxxxxxxxxxx.supabase.co"></div>
+      <div class="sb-f"><label>Anon Public Key</label><input id="cfg-sbk" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."><div class="sb-hint">Settings → API en tu proyecto Supabase</div></div>
+    </div>
+
+    <div class="sb-sec">
+      <div class="sb-sec-t"><i class="ti ti-mail"></i> Resend — Correos reales</div>
+      <div class="sb-f"><label>API Key</label><input type="password" id="cfg-rk" placeholder="re_xxxxxxxxxxxxxxxxxxxx"></div>
+      <div class="sb-f"><label>Correo remitente</label><input id="cfg-from" placeholder="noreply@tudominio.com  o  onboarding@resend.dev"><div class="sb-hint">Sin dominio verificado usa onboarding@resend.dev</div></div>
+    </div>
+
+    <div class="sb-sec">
+      <div class="sb-sec-t"><i class="ti ti-lock"></i> Seguridad Admin</div>
+      <div class="sb-f"><label>Contraseña del panel administrador</label><input type="password" id="cfg-pw" placeholder="Mínimo 6 caracteres"></div>
+    </div>
+
+    <div class="sb-sec">
+      <div class="sb-sec-t"><i class="ti ti-camera"></i> Cámaras Creality (opcional)</div>
+      <div class="sb-f"><label>Stream MJPEG — Creality Hi #1</label><input id="cfg-c1" placeholder="http://192.168.1.x:4408/webcam/?action=stream"></div>
+      <div class="sb-f"><label>Stream MJPEG — Creality Hi #2</label><input id="cfg-c2" placeholder="http://192.168.1.x:4408/webcam/?action=stream"><div class="sb-hint">Encuéntrala en la pantalla: Settings → Network → IP. Para acceso remoto usa ngrok.</div></div>
+    </div>
+
+    <button class="sb-btn" onclick="saveConfig()"><i class="ti ti-rocket"></i> Guardar y entrar al sistema</button>
+    <div class="sb-st" id="sb-st"></div>
+    <div class="sb-skip" onclick="skipSetup()">Entrar en modo demo (sin base de datos)</div>
+  </div>
+</div>
+</div>
+
+<!-- MODALS -->
+<div class="mo" id="m-rev">
+  <div class="mdl">
+    <div class="mh"><span class="mt" id="rev-t">Revisar Solicitud</span><button class="btn bts sm ic" onclick="cM('m-rev')"><i class="ti ti-x"></i></button></div>
+    <div id="rev-b"></div>
+    <hr style="border:none;border-top:1px solid var(--border);margin:16px 0">
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btg sm" onclick="adminAcc('aprobar')"><i class="ti ti-check"></i> Aprobar e iniciar</button>
+      <button class="btn btw sm" onclick="adminAcc('queue')"><i class="ti ti-clock"></i> Poner en cola</button>
+      <button class="btn btd sm" onclick="adminAcc('rechazar')"><i class="ti ti-x"></i> Rechazar</button>
+      <button class="btn bts sm" onclick="cM('m-rev')">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<div class="mo" id="m-notif">
+  <div class="mdl">
+    <div class="mh"><span class="mt"><i class="ti ti-bell-ringing" style="color:var(--warn)"></i> Enviar Notificación por Correo</span><button class="btn bts sm ic" onclick="cM('m-notif')"><i class="ti ti-x"></i></button></div>
+    <div class="ff"><label>Solicitud</label><select id="n-sol"></select></div>
+    <div class="ff"><label>Tipo</label><select id="n-tipo" onchange="setNMsg()"><option value="listo">Lista para recoger</option><option value="inicio">Impresión iniciada</option><option value="turno">Tu turno se acerca (30 min)</option><option value="problema">Problema con tu impresión</option><option value="custom">Mensaje personalizado</option></select></div>
+    <div class="ff"><label>Mensaje (preview del correo)</label><textarea id="n-msg" rows="4"></textarea></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn bts" onclick="cM('m-notif')">Cancelar</button>
+      <button class="btn btp" id="btn-sn" onclick="doSendNotif()"><i class="ti ti-send"></i> Enviar correo real</button>
+    </div>
+  </div>
+</div>
+
+<div class="mo" id="m-compra">
+  <div class="mdl">
+    <div class="mh"><span class="mt"><i class="ti ti-shopping-cart" style="color:var(--a3)"></i> Registrar Compra de Filamento</span><button class="btn bts sm ic" onclick="cM('m-compra')"><i class="ti ti-x"></i></button></div>
+    <div class="fr">
+      <div><label>Material</label><select id="c-mat"><option>PLA Blanco</option><option>PLA Negro</option><option>PLA Gris</option><option>PLA Rojo</option><option>PLA Azul</option><option>PLA Amarillo</option><option>PETG Transparente</option><option>PETG Negro</option><option>TPU Negro</option><option>ABS Negro</option></select></div>
+      <div><label>Peso (kg)</label><input type="number" id="c-kg" min="0.1" step="0.1" placeholder="1.0"></div>
+    </div>
+    <div class="fr">
+      <div><label>Proveedor</label><input type="text" id="c-prov" placeholder="Filamentos3D.co"></div>
+      <div><label>Costo total (COP)</label><input type="number" id="c-cost" placeholder="55000"></div>
+    </div>
+    <div class="fr">
+      <div><label>Fuente del dinero</label><select id="c-fuente"><option>Pagos de estudiantes</option><option>Presupuesto departamental</option><option>Donación</option><option>Proyecto de investigación</option></select></div>
+      <div><label>Fecha</label><input type="date" id="c-fecha"></div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn bts" onclick="cM('m-compra')">Cancelar</button>
+      <button class="btn btg" id="btn-comp" onclick="doCompra()"><i class="ti ti-check"></i> Registrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL LOGIN ADMIN -->
+<div class="mo" id="m-login">
+  <div class="mdl" style="max-width:380px">
+    <div class="mh">
+      <span class="mt"><i class="ti ti-shield" style="color:var(--accent)"></i> Acceso de Administrador</span>
+      <button class="btn bts sm ic" onclick="cM('m-login')"><i class="ti ti-x"></i></button>
+    </div>
+    <div style="text-align:center;margin-bottom:20px">
+      <div style="width:56px;height:56px;background:linear-gradient(135deg,var(--accent),var(--a2));border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:28px;color:#fff;margin:0 auto 12px">
+        <i class="ti ti-lock"></i>
+      </div>
+      <div style="font-size:13px;color:var(--t2)">Solo el personal autorizado de la Sala STEAM puede acceder al panel de administración.</div>
+    </div>
+    <div class="ff">
+      <label>Contraseña de administrador</label>
+      <input type="password" id="login-pw" placeholder="Ingresa la contraseña" onkeydown="if(event.key==='Enter')doLogin()">
+      <div style="font-size:11px;color:var(--danger);margin-top:5px;min-height:16px" id="login-err"></div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn bts" onclick="cM('m-login')">Cancelar</button>
+      <button class="btn btp" onclick="doLogin()"><i class="ti ti-login"></i> Entrar</button>
+    </div>
+    <div style="margin-top:14px;padding:10px 12px;background:rgba(0,200,240,.06);border-radius:var(--r2);border-left:3px solid var(--accent);font-size:11px;color:var(--t2)">
+      <i class="ti ti-info-circle"></i> La contraseña se configura en el panel de configuración inicial (ícono <i class="ti ti-settings"></i>).
+    </div>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav id="nav" style="display:none">
+  <div class="nb">
+    <div class="nb-ic"><i class="ti ti-3d-cube-sphere"></i></div>
+    <div><div class="nb-t">STEAM <span>3D</span></div><div class="nb-s">Salón 117 · UIS</div></div>
+  </div>
+  <div class="vsw">
+    <button class="vb aa" id="vba" onclick="reqAdmin()"><i class="ti ti-shield"></i> Admin</button>
+    <button class="vb" id="vbs" onclick="swV('student')"><i class="ti ti-user"></i> Estudiante</button>
+  </div>
+  <div class="ndiv"></div>
+  <div id="an" style="display:flex;gap:3px;flex-wrap:wrap">
+    <button class="nt active" onclick="sP('dash',this)"><i class="ti ti-layout-dashboard"></i> Dashboard</button>
+    <button class="nt" onclick="sP('cola',this)"><i class="ti ti-list-numbers"></i> Cola <span class="nbg" id="bc">0</span></button>
+    <button class="nt" onclick="sP('fin',this)"><i class="ti ti-currency-dollar"></i> Finanzas</button>
+    <button class="nt" onclick="sP('cam',this)"><i class="ti ti-camera"></i> Cámaras</button>
+    <button class="nt" onclick="sP('qr',this)"><i class="ti ti-qrcode"></i> QR</button>
+  </div>
+  <div id="sn" style="display:none;gap:3px;flex-wrap:wrap">
+    <button class="nt active" onclick="sS('nueva',this)"><i class="ti ti-plus"></i> Nueva solicitud</button>
+    <button class="nt" onclick="sS('estado',this)"><i class="ti ti-clock"></i> Mi estado</button>
+    <button class="nt" onclick="sS('cpub',this)"><i class="ti ti-list-numbers"></i> Cola pública</button>
+  </div>
+  <div class="ndiv"></div>
+  <button class="n-set" onclick="document.getElementById('setup').style.display='flex'" title="Configuración"><i class="ti ti-settings"></i></button>
+  <button class="btn btd sm" id="logout-btn" onclick="logout()" style="display:none;padding:5px 10px;font-size:11px"><i class="ti ti-logout"></i> Salir</button>
+  <div class="db-pill" id="dbs">demo</div>
+</nav>
+
+<div class="main" id="mc" style="display:none">
+
+<!-- ADMIN DASHBOARD -->
+<div class="page active" id="p-dash">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px">
+    <div><div class="sec-t">Panel de Control</div><div class="sec-s" id="dn">Sala STEAM · Salón 117 · UIS</div></div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <div class="uis"><div class="uis-c">UIS</div><div><div style="font-size:12px;font-weight:700">Sala STEAM</div><div style="font-size:10px;color:var(--t3)">Salón 117</div></div></div>
+      <button class="btn bts sm" onclick="openNM()"><i class="ti ti-bell"></i> Notificar</button>
+      <button class="btn btp sm" onclick="loadAll()"><i class="ti ti-refresh"></i></button>
+    </div>
+  </div>
+  <div class="g5" style="margin-bottom:18px">
+    <div class="sc"><div class="sl">Por revisar</div><div class="sv cp" id="s-rev">—</div><div class="sd">Nuevas solicitudes</div></div>
+    <div class="sc"><div class="sl">En cola</div><div class="sv cy" id="s-pen">—</div><div class="sd">Esperando turno</div></div>
+    <div class="sc"><div class="sl">Imprimiendo</div><div class="sv cw" id="s-pri">—</div><div class="sd">En proceso ahora</div></div>
+    <div class="sc"><div class="sl">Listas para recoger</div><div class="sv cg" id="s-rdy">—</div><div class="sd">Terminadas</div></div>
+    <div class="sc"><div class="sl">Ingresos totales</div><div class="sv cg" id="s-ing">—</div><div class="sd">COP cobrados</div></div>
+  </div>
+  <div class="g2" style="margin-bottom:16px">
+    <div class="card">
+      <div class="ct"><i class="ti ti-eye" style="color:var(--a2)"></i> Por revisar
+        <button class="btn bts sm" style="margin-left:auto" onclick="sP('cola',document.querySelectorAll('#an .nt')[1])">Ver todas</button>
+      </div>
+      <div id="d-rev"><div style="text-align:center;padding:20px;color:var(--t3)"><span class="spin"></span></div></div>
+    </div>
+    <div class="card">
+      <div class="ct"><i class="ti ti-mail" style="color:var(--warn)"></i> Últimos correos enviados</div>
+      <div id="d-notif"><div style="text-align:center;padding:20px;color:var(--t3)"><span class="spin"></span></div></div>
+    </div>
+  </div>
+  <div class="card"><div class="ct"><i class="ti ti-printer" style="color:var(--a3)"></i> Impresoras Creality Hi</div><div class="g2" id="pd"></div></div>
+</div>
+
+<!-- ADMIN COLA -->
+<div class="page" id="p-cola">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px">
+    <div><div class="sec-t">Cola de Impresión</div><div class="sec-s">Orden de llegada · Creality Hi #1 y Creality Hi #2 · Salón 117 UIS</div></div>
+    <div style="display:flex;gap:8px"><button class="btn bts sm" onclick="openNM()"><i class="ti ti-bell"></i> Notificar</button><button class="btn btp sm" onclick="loadSols()"><i class="ti ti-refresh"></i></button></div>
+  </div>
+  <div class="tb"><button class="tbb active" onclick="fc('todas',this)">Todas</button><button class="tbb" onclick="fc('review',this)">Por revisar</button><button class="tbb" onclick="fc('pending',this)">En cola</button><button class="tbb" onclick="fc('printing',this)">Imprimiendo</button><button class="tbb" onclick="fc('ready',this)">Listas</button><button class="tbb" onclick="fc('done',this)">Entregadas</button></div>
+  <div class="card" style="overflow-x:auto">
+    <table class="tbl" style="min-width:780px">
+      <thead><tr><th>Pos</th><th>Estudiante</th><th>Archivo STL</th><th>Material</th><th>Fecha límite</th><th>Costo</th><th>Estado</th><th>Acciones</th></tr></thead>
+      <tbody id="tb-cola"><tr><td colspan="8" class="te"><span class="spin"></span></td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ADMIN FINANZAS -->
+<div class="page" id="p-fin">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px">
+    <div><div class="sec-t">Control Financiero</div><div class="sec-s">Ingresos, compras de filamento y balance en tiempo real</div></div>
+    <div style="display:flex;gap:8px"><button class="btn btg sm" onclick="oM('m-compra')"><i class="ti ti-shopping-cart"></i> Registrar compra</button><button class="btn btp sm" onclick="loadFin()"><i class="ti ti-refresh"></i></button></div>
+  </div>
+  <div class="g4" style="margin-bottom:18px">
+    <div class="sc"><div class="sl">Total ingresos</div><div class="sv cg" id="fi">—</div><div class="sd">Pagos cobrados</div></div>
+    <div class="sc"><div class="sl">Total gastos</div><div class="sv cp" id="fg">—</div><div class="sd">Filamento comprado</div></div>
+    <div class="sc"><div class="sl">Balance disponible</div><div class="sv cy" id="fb">—</div><div class="sd">En caja</div></div>
+    <div class="sc"><div class="sl">Tarifa actual</div><div class="sv cw" id="ft">—</div><div class="sd">COP por gramo</div></div>
+  </div>
+  <div class="g2">
+    <div class="card">
+      <div class="ct"><i class="ti ti-cash" style="color:var(--a3)"></i> Ingresos por impresiones</div>
+      <table class="tbl"><thead><tr><th>Estudiante</th><th>Archivo</th><th>Gramos</th><th>Monto</th><th>Fecha</th></tr></thead><tbody id="tb-ing"><tr><td colspan="5" class="te"><span class="spin"></span></td></tr></tbody></table>
+    </div>
+    <div class="card">
+      <div class="ct"><i class="ti ti-shopping-cart" style="color:var(--a2)"></i> Compras de filamento</div>
+      <table class="tbl"><thead><tr><th>Material</th><th>Peso</th><th>Costo</th><th>Fuente</th><th>Fecha</th></tr></thead><tbody id="tb-comp"><tr><td colspan="5" class="te"><span class="spin"></span></td></tr></tbody></table>
+      <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
+        <div style="font-size:13px;font-weight:700;margin-bottom:10px">Configurar tarifa</div>
+        <div class="fr" style="margin-bottom:0">
+          <div><label>Precio por gramo (COP)</label><input type="number" id="cfg-p" value="120" min="1" oninput="updC()"></div>
+          <div><label>Mínimo cobrado (g)</label><input type="number" id="cfg-m" value="10" min="1" oninput="updC()"></div>
+        </div>
+        <div style="font-size:11px;color:var(--t3);font-family:var(--mono);margin-top:6px" id="cfg-prev">Mínimo: $1,200</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN CAMARAS -->
+<div class="page" id="p-cam">
+  <div class="sec-t" style="margin-bottom:4px">Cámaras en Vivo</div>
+  <div class="sec-s">Monitoreo Creality Hi #1 y #2 · Salón 117 · Sala STEAM UIS</div>
+  <div class="g2" style="margin-bottom:16px">
+    <div class="card">
+      <div class="ct"><i class="ti ti-camera" style="color:var(--accent)"></i> Creality Hi #1</div>
+      <div class="cam-w"><div class="cam-ov" id="co1"><i class="ti ti-camera-off" style="font-size:32px"></i><div style="font-size:13px;margin-top:6px">Cámara no configurada</div><button class="btn bts sm" style="margin-top:8px" onclick="document.getElementById('setup').style.display='flex'">Configurar</button></div></div>
+      <div style="display:flex;gap:8px;margin-top:10px"><input type="text" id="cu1" placeholder="http://IP:4408/webcam/?action=stream" style="flex:1;font-size:11px;font-family:var(--mono)"><button class="btn btp sm" onclick="apCam(1)"><i class="ti ti-eye"></i> Ver</button></div>
+      <div style="font-size:11px;color:var(--t3);margin-top:5px">Acceso remoto: <code style="font-family:var(--mono)">ngrok http [IP]:4408</code></div>
+    </div>
+    <div class="card">
+      <div class="ct"><i class="ti ti-camera" style="color:var(--a2)"></i> Creality Hi #2</div>
+      <div class="cam-w"><div class="cam-ov" id="co2"><i class="ti ti-camera-off" style="font-size:32px"></i><div style="font-size:13px;margin-top:6px">Cámara no configurada</div><button class="btn bts sm" style="margin-top:8px" onclick="document.getElementById('setup').style.display='flex'">Configurar</button></div></div>
+      <div style="display:flex;gap:8px;margin-top:10px"><input type="text" id="cu2" placeholder="http://IP:4408/webcam/?action=stream" style="flex:1;font-size:11px;font-family:var(--mono)"><button class="btn btpu sm" onclick="apCam(2)"><i class="ti ti-eye"></i> Ver</button></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ct"><i class="ti ti-info-circle" style="color:var(--accent)"></i> Cómo conectar la cámara</div>
+    <div class="g3">
+      <div style="background:var(--bg3);border-radius:var(--r2);padding:14px"><div style="font-size:12px;font-weight:700;color:var(--accent);margin-bottom:6px">Red local (Salón 117)</div><div style="font-size:12px;color:var(--t2);line-height:1.7">En la Creality: Settings → Network → IP Address. URL: <code style="font-family:var(--mono);font-size:10px;color:var(--warn)">http://[IP]:4408/webcam/?action=stream</code></div></div>
+      <div style="background:var(--bg3);border-radius:var(--r2);padding:14px"><div style="font-size:12px;font-weight:700;color:var(--a3);margin-bottom:6px">Acceso desde casa (ngrok)</div><div style="font-size:12px;color:var(--t2);line-height:1.7">Deja un PC encendido en el salón: <code style="font-family:var(--mono);font-size:10px">ngrok http [IP]:4408</code> — genera URL pública.</div></div>
+      <div style="background:var(--bg3);border-radius:var(--r2);padding:14px"><div style="font-size:12px;font-weight:700;color:var(--warn);margin-bottom:6px">Seguridad</div><div style="font-size:12px;color:var(--t2);line-height:1.7">Las cámaras solo son visibles en el panel Admin (requiere contraseña). Los estudiantes no tienen acceso.</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN QR -->
+<div class="page" id="p-qr">
+  <div class="sec-t" style="margin-bottom:4px">Acceso para Estudiantes</div>
+  <div class="sec-s">Código QR · Portal público · Sala STEAM Salón 117</div>
+  <div class="g2">
+    <div class="card card-c" style="display:flex;flex-direction:column;align-items:center;gap:16px;padding:28px">
+      <div class="ct" style="align-self:flex-start"><i class="ti ti-qrcode" style="color:var(--accent)"></i> Código QR del Salón 117</div>
+      <div style="background:#fff;padding:16px;border-radius:12px"><canvas id="qrc" width="180" height="180"></canvas></div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--accent);word-break:break-all;padding:10px;background:var(--bg3);border-radius:var(--r2);width:100%;text-align:center" id="qru">—</div>
+      <div style="display:flex;gap:8px"><button class="btn btp sm" onclick="genQR()"><i class="ti ti-refresh"></i> Nuevo QR</button><button class="btn bts sm" onclick="copyQR()"><i class="ti ti-copy"></i> Copiar URL</button></div>
+      <div style="font-size:11px;color:var(--t3);text-align:center;line-height:1.7">Imprime este QR y pégalo en la puerta del Salón 117.<br>Los estudiantes lo escanean para solicitar impresiones.</div>
+    </div>
+    <div>
+      <div class="card" style="margin-bottom:14px">
+        <div class="ct"><i class="ti ti-info-circle" style="color:var(--a2)"></i> Flujo de uso</div>
+        <div style="font-size:13px;color:var(--t2);line-height:2">
+          <div>① Estudiante escanea QR del Salón 117</div>
+          <div>② Llena formulario y sube archivo STL</div>
+          <div>③ Sistema lo pone en cola por orden de llegada</div>
+          <div>④ Admin revisa y aprueba desde cualquier lugar</div>
+          <div>⑤ Estudiante recibe <strong style="color:var(--accent)">correo automático</strong> al aprobar</div>
+          <div>⑥ Al terminar, otro <strong style="color:var(--a3)">correo</strong> indica que puede recoger</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ct"><i class="ti ti-cube" style="color:var(--accent)"></i> Inventario de filamento</div>
+        <div id="inv"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- STUDENT: NUEVA SOLICITUD -->
+<div class="page" id="p-nueva" style="display:none">
+  <div class="hero">
+    <div class="hero-ic"><i class="ti ti-3d-cube-sphere"></i></div>
+    <div style="flex:1"><div style="font-size:18px;font-weight:700;margin-bottom:4px">Portal de Impresión 3D — Sala STEAM</div><div style="font-size:13px;color:var(--t2);line-height:1.6">Salón 117 · Universidad Industrial de Santander · Sube tu archivo STL y recibe notificación por correo cuando tu impresión esté lista.</div></div>
+    <div class="uis"><div class="uis-c">UIS</div><div><div style="font-size:12px;font-weight:700">Sala STEAM</div><div style="font-size:10px;color:var(--t3)">Salón 117</div></div></div>
+  </div>
+  <div class="card card-g">
+    <div class="ct"><i class="ti ti-forms" style="color:var(--a3)"></i> Nueva Solicitud de Impresión 3D</div>
+    <div style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Datos personales</div>
+    <div class="fr"><div><label>Nombre completo *</label><input id="sn" placeholder="Laura Pérez García"></div><div><label>Correo institucional UIS *</label><input type="email" id="se" placeholder="l.perez@correo.uis.edu.co"></div></div>
+    <div class="fr"><div><label>Código de estudiante *</label><input id="sc2" placeholder="2022035478"></div><div><label>Programa académico</label><input id="sp2" placeholder="Ing. Mecatrónica"></div></div>
+    <div class="fr" style="margin-bottom:18px"><div><label>Materia / Proyecto</label><input id="sm2" placeholder="Diseño de Máquinas"></div><div><label>Docente</label><input id="sdoc" placeholder="Dr. Carlos Ramírez"></div></div>
+    <div style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Detalles de la impresión</div>
+    <div class="fr"><div><label>Material *</label><select id="smat"><option>PLA</option><option>ABS</option><option>PETG</option><option>TPU (Flexible)</option></select></div><div><label>Fecha límite que necesitas *</label><input type="date" id="sdl"></div></div>
+    <div class="fr"><div><label>Gramos estimados</label><input type="number" id="sg" placeholder="50" min="1" oninput="updCosto()"></div><div><label>Tiempo estimado (horas)</label><input type="number" id="sh" placeholder="3" min="0.5" step="0.5"></div></div>
+    <div class="ff"><label>Descripción / Observaciones</label><textarea id="sob" rows="2" placeholder="Porcentaje de relleno, escala, propósito del modelo..."></textarea></div>
+    <div style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Archivo STL *</div>
+    <div class="dz" id="dz" onclick="document.getElementById('fi2').click()" ondragover="dov(event)" ondragleave="dlv()" ondrop="ddf(event)">
+      <input type="file" id="fi2" accept=".stl,.obj,.3mf" style="display:none" onchange="hf(this.files[0])">
+      <div id="dc"><i class="ti ti-upload" style="font-size:36px;color:var(--t3);display:block;margin-bottom:10px"></i><div style="font-size:14px;font-weight:600;color:var(--t2)">Arrastra tu archivo STL aquí</div><div style="font-size:12px;color:var(--t3);margin-top:4px">o haz clic para seleccionar · .stl .obj .3mf</div></div>
+      <div id="dp2" style="display:none"><i class="ti ti-file-3d" style="font-size:36px;color:var(--a3);display:block;margin-bottom:10px"></i><div style="font-size:14px;font-weight:700;color:var(--a3)" id="fn2">archivo.stl</div><div style="font-size:12px;color:var(--t3);margin-top:4px" id="fsz2"></div><button class="btn btd sm" style="margin-top:12px" onclick="rmf(event)"><i class="ti ti-x"></i> Quitar</button></div>
+    </div>
+    <div style="margin-top:14px;padding:12px 14px;background:rgba(0,200,240,.06);border-radius:var(--r2);border-left:3px solid var(--accent);font-size:13px;color:var(--t2)">
+      Costo estimado: <strong style="color:var(--a3);font-family:var(--mono)" id="sc3">$0</strong>
+      <span style="color:var(--t3);font-size:11px;margin-left:8px">$<span id="spg">120</span>/g · mínimo <span id="smg">10</span>g · Salón 117</span>
+    </div>
+    <div style="margin-top:14px;display:flex;gap:10px;justify-content:flex-end;align-items:center;flex-wrap:wrap">
+      <div style="font-size:12px;color:var(--t3)"><i class="ti ti-mail"></i> Recibirás confirmación en tu correo UIS</div>
+      <button class="btn btg" id="btn-env" onclick="envSol()"><i class="ti ti-send"></i> Enviar Solicitud</button>
+    </div>
+  </div>
+</div>
+
+<!-- STUDENT: MI ESTADO -->
+<div class="page" id="p-estado" style="display:none">
+  <div class="sec-t" style="margin-bottom:4px">Estado de mi Solicitud</div>
+  <div class="sec-s">Busca con tu correo UIS o código de estudiante</div>
+  <div class="card" style="margin-bottom:16px">
+    <div style="display:flex;gap:10px;flex-wrap:wrap"><input id="bi" placeholder="l.perez@correo.uis.edu.co  o  2022035478" style="flex:1;min-width:200px"><button class="btn btp" onclick="buscar()"><i class="ti ti-search"></i> Buscar</button></div>
+  </div>
+  <div id="er"><div style="text-align:center;padding:50px;color:var(--t3)"><i class="ti ti-search" style="font-size:44px;display:block;margin-bottom:14px"></i><div style="font-size:14px">Ingresa tu correo o código para ver el estado de tu impresión</div></div></div>
+</div>
+
+<!-- STUDENT: COLA PUBLICA -->
+<div class="page" id="p-cpub" style="display:none">
+  <div class="sec-t" style="margin-bottom:4px">Cola de Impresión — Salón 117</div>
+  <div class="sec-s">Estado en tiempo real · Creality Hi #1 y Creality Hi #2</div>
+  <div class="g2" style="margin-bottom:16px" id="pup"></div>
+  <div class="card"><div class="ct"><i class="ti ti-list-numbers" style="color:var(--accent)"></i> Cola actual (orden de llegada)</div><div id="pql"><div style="text-align:center;padding:20px;color:var(--t3)"><span class="spin"></span></div></div></div>
+</div>
+
+</div><!-- /main -->
+
+<script>
+// ── STATE ──
+let CFG={sbUrl:'',sbKey:'',resendKey:'',fromEmail:'',adminPw:'',cam1:'',cam2:'',pg:120,mg:10,demo:false};
+let SB=null,reviewId=null,selFile=null,curFilter='todas';
+let PRINTERS=[{id:1,name:'Creality Hi #1',status:'idle',job:null,pr:0},{id:2,name:'Creality Hi #2',status:'idle',job:null,pr:0}];
+let INV=[{c:'#e5e5e5',n:'PLA Blanco',s:840},{c:'#111',n:'PLA Negro',s:620},{c:'#6b7280',n:'PLA Gris',s:410},{c:'#ef4444',n:'PLA Rojo',s:210},{c:'#3b82f6',n:'PLA Azul',s:380},{c:'#f59e0b',n:'ABS Negro',s:150}];
+
+// ── HELPERS ──
+const fmt=n=>'$'+Math.round(n).toLocaleString('es-CO');
+const pad=n=>String(n).substring(0,8);
+const ini=n=>n.split(' ').map(w=>w[0]||'').join('').substring(0,2).toUpperCase();
+const fmtDate=d=>d?new Date(d).toLocaleDateString('es-CO'):'—';
+const fmtDT=d=>d?new Date(d).toLocaleString('es-CO'):'—';
+
+function toast(msg,t='s',sub=''){
+  const c=document.getElementById('tc');
+  const el=document.createElement('div');
+  el.className='toast'+(t==='w'?' w':t==='e'?' e':t==='i'?' i':'');
+  const ic={s:'ti-check',w:'ti-alert-triangle',e:'ti-x',i:'ti-bell'};
+  const cl={s:'var(--a3)',w:'var(--warn)',e:'var(--danger)',i:'var(--accent)'};
+  el.innerHTML=`<i class="ti ${ic[t]||'ti-info-circle'}" style="color:${cl[t]||cl.i};font-size:18px;flex-shrink:0"></i><div><div style="font-weight:600">${msg}</div>${sub?`<div style="font-size:11px;color:var(--t3);margin-top:2px">${sub}</div>`:''}</div>`;
+  c.appendChild(el);setTimeout(()=>el.remove(),4300);
+}
+function oM(id){document.getElementById(id).classList.add('open')}
+function cM(id){document.getElementById(id).classList.remove('open')}
+
+// ── SETUP ──
+function saveConfig(){
+  const url=document.getElementById('cfg-sbu').value.trim();
+  const key=document.getElementById('cfg-sbk').value.trim();
+  const rk=document.getElementById('cfg-rk').value.trim();
+  const from=document.getElementById('cfg-from').value.trim();
+  const pw=document.getElementById('cfg-pw').value;
+  const c1=document.getElementById('cfg-c1').value.trim();
+  const c2=document.getElementById('cfg-c2').value.trim();
+  const st=document.getElementById('sb-st');
+  if(!url||!key){st.textContent='Supabase URL y Key son obligatorios';st.className='sb-st err';return}
+  if(!pw||pw.length<6){st.textContent='Contraseña mínimo 6 caracteres';st.className='sb-st err';return}
+  st.textContent='Conectando...';st.className='sb-st';
+  CFG={sbUrl:url,sbKey:key,resendKey:rk,fromEmail:from||'onboarding@resend.dev',adminPw:pw,cam1:c1,cam2:c2,pg:120,mg:10,demo:false};
+  localStorage.setItem('s3d',JSON.stringify(CFG));
+  initSB();
+  SB.from('solicitudes').select('id').limit(1).then(({error})=>{
+    if(error){st.textContent='Error: '+error.message;st.className='sb-st err';return}
+    st.textContent='Conexión exitosa!';st.className='sb-st ok';
+    setTimeout(launch,700);
+  });
+}
+function skipSetup(){CFG.demo=true;launch()}
+function initSB(){if(CFG.sbUrl&&CFG.sbKey)SB=window.supabase.createClient(CFG.sbUrl,CFG.sbKey)}
+function launch(){
+  document.getElementById('setup').style.display='none';
+  document.getElementById('nav').style.display='flex';
+  document.getElementById('mc').style.display='block';
+  const pill=document.getElementById('dbs');
+  pill.textContent=CFG.demo?'demo':'live';
+  pill.style.color=CFG.demo?'var(--warn)':'var(--a3)';
+  pill.style.borderColor=CFG.demo?'rgba(245,158,11,.3)':'rgba(16,185,129,.3)';
+  document.getElementById('dn').textContent='Sala STEAM · Salón 117 · UIS · '+new Date().toLocaleDateString('es-CO',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  document.getElementById('sdl').min=new Date().toISOString().split('T')[0];
+  updC();genQR();
+  if(CFG.cam1){document.getElementById('cu1').value=CFG.cam1;apCam(1)}
+  if(CFG.cam2){document.getElementById('cu2').value=CFG.cam2;apCam(2)}
+  loadAll();renderPrinters();renderInv();
+}
+
+// ── AUTH ──
+let isAdminAuth=false;
+function reqAdmin(){
+  if(isAdminAuth){swV('admin');return}
+  // Si no hay contraseña configurada, entrar directo (modo demo)
+  if(!CFG.adminPw||CFG.demo){isAdminAuth=true;swV('admin');return}
+  document.getElementById('login-pw').value='';
+  document.getElementById('login-err').textContent='';
+  oM('m-login');
+  setTimeout(()=>document.getElementById('login-pw').focus(),100);
+}
+function doLogin(){
+  const pw=document.getElementById('login-pw').value;
+  if(pw===CFG.adminPw){
+    isAdminAuth=true;
+    cM('m-login');
+    swV('admin');
+    toast('Bienvenido, administrador','s','Sala STEAM · Salón 117 UIS');
+  } else {
+    document.getElementById('login-err').textContent='Contraseña incorrecta. Intenta de nuevo.';
+    document.getElementById('login-pw').value='';
+    document.getElementById('login-pw').focus();
+    setTimeout(()=>document.getElementById('login-err').textContent='',3000);
+  }
+}
+function logout(){
+  isAdminAuth=false;
+  swV('student');
+  toast('Sesión de administrador cerrada','i');
+}
+
+// ── NAVIGATION ──
+function swV(v){
+  const isA=v==='admin';
+  // Si intenta ir a admin sin auth, pedir login
+  if(isA&&!isAdminAuth&&CFG.adminPw&&!CFG.demo){reqAdmin();return}
+  document.getElementById('an').style.display=isA?'flex':'none';
+  document.getElementById('sn').style.display=isA?'none':'flex';
+  document.getElementById('vba').className='vb'+(isA?' aa':'');
+  document.getElementById('vbs').className='vb'+(!isA?' as':'');
+  // Mostrar/ocultar botón de cerrar sesión
+  const lob=document.getElementById('logout-btn');
+  if(lob)lob.style.display=isA?'flex':'none';
+  document.querySelectorAll('.page').forEach(p=>{p.classList.remove('active');p.style.display='none'});
+  if(isA){const p=document.getElementById('p-dash');p.style.display='block';p.classList.add('active');document.querySelectorAll('#an .nt').forEach((t,i)=>t.classList.toggle('active',i===0));loadAll()}
+  else{const p=document.getElementById('p-nueva');p.style.display='block';p.classList.add('active');document.querySelectorAll('#sn .nt').forEach((t,i)=>t.classList.toggle('active',i===0));updCosto()}
+}
+function sP(pg,btn){
+  document.querySelectorAll('.page').forEach(p=>{p.classList.remove('active');p.style.display='none'});
+  document.querySelectorAll('#an .nt').forEach(t=>t.classList.remove('active'));
+  const el=document.getElementById('p-'+pg);el.style.display='block';el.classList.add('active');
+  if(btn)btn.classList.add('active');
+  if(pg==='qr')genQR();if(pg==='cola')loadSols();if(pg==='fin')loadFin();if(pg==='dash')loadAll();
+}
+function sS(pg,btn){
+  document.querySelectorAll('.page').forEach(p=>{p.classList.remove('active');p.style.display='none'});
+  document.querySelectorAll('#sn .nt').forEach(t=>t.classList.remove('active'));
+  const el=document.getElementById('p-'+pg);el.style.display='block';el.classList.add('active');
+  if(btn)btn.classList.add('active');
+  if(pg==='cpub')loadPubQ();
+}
+
+// ── DATA ──
+async function getSols(filter){
+  if(CFG.demo)return getDemoData(filter);
+  if(!SB)return[];
+  let q=SB.from('solicitudes').select('*').order('created_at',{ascending:true});
+  if(filter&&filter!=='todas')q=q.eq('status',filter);
+  const{data,error}=await q;
+  if(error){toast('Error BD','e',error.message);return[]}
+  return data||[];
+}
+function getDemoData(f){
+  const now=Date.now();
+  const d=[
+    {id:'d1',nombre:'Andrés García',email:'a.garcia@correo.uis.edu.co',codigo:'2022011200',programa:'Ing. Industrial',materia:'Diseño de Procesos',archivo:'engranaje_helical.stl',material:'PLA',deadline:'2025-02-15',gramos:87,horas:4.5,costo:10440,status:'printing',impresora:'Creality Hi #1',created_at:new Date(now-7200000).toISOString()},
+    {id:'d2',nombre:'Laura Pérez',email:'l.perez@correo.uis.edu.co',codigo:'2021035400',programa:'Diseño Industrial',materia:'Prototipado',archivo:'prototipo_brazo.stl',material:'PETG',deadline:'2025-02-10',gramos:62,horas:3,costo:7440,status:'ready',impresora:'Creality Hi #2',created_at:new Date(now-5400000).toISOString()},
+    {id:'d3',nombre:'Camilo Torres',email:'c.torres@correo.uis.edu.co',codigo:'2023078900',programa:'Mecatrónica',materia:'Robótica',archivo:'soporte_sensor.stl',material:'PLA',deadline:'2025-02-20',gramos:28,horas:1.5,costo:3360,status:'review',created_at:new Date(now-1800000).toISOString()},
+    {id:'d4',nombre:'María Ochoa',email:'m.ochoa@correo.uis.edu.co',codigo:'2020045500',programa:'Arquitectura',materia:'Maquetería Digital',archivo:'maqueta_edificio.stl',material:'PLA',deadline:'2025-02-25',gramos:145,horas:8,costo:17400,status:'pending',created_at:new Date(now-900000).toISOString()},
+  ];
+  return(!f||f==='todas')?d:d.filter(s=>s.status===f);
+}
+async function dbIns(table,row){
+  if(CFG.demo)return{data:[{id:'demo'+Date.now(),...row}],error:null};
+  if(!SB)return{data:null,error:{message:'Sin conexión'}};
+  return await SB.from(table).insert(row).select();
+}
+async function dbUpd(table,id,upd){
+  if(CFG.demo)return{error:null};
+  if(!SB)return{error:{message:'Sin conexión'}};
+  return await SB.from(table).update(upd).eq('id',id);
+}
+
+// ── LOAD FUNCTIONS ──
+async function loadAll(){await Promise.all([loadStats(),loadDashRev(),loadDashNotifs()]);renderPrinters()}
+async function loadStats(){
+  const s=await getSols();
+  document.getElementById('s-rev').textContent=s.filter(x=>x.status==='review').length;
+  document.getElementById('s-pen').textContent=s.filter(x=>x.status==='pending').length;
+  document.getElementById('s-pri').textContent=s.filter(x=>x.status==='printing').length;
+  document.getElementById('s-rdy').textContent=s.filter(x=>x.status==='ready').length;
+  document.getElementById('s-ing').textContent=fmt(s.filter(x=>x.status==='done').reduce((a,x)=>a+(x.costo||0),0));
+  document.getElementById('bc').textContent=s.filter(x=>['review','pending','printing'].includes(x.status)).length;
+  document.getElementById('ft').textContent='$'+CFG.pg;
+}
+async function loadDashRev(){
+  const revs=await getSols('review');
+  const el=document.getElementById('d-rev');
+  if(!revs.length){el.innerHTML='<div style="text-align:center;padding:20px;color:var(--t3);font-size:13px">Sin solicitudes nuevas</div>';return}
+  el.innerHTML=revs.slice(0,5).map(s=>`<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">
+    <div style="width:32px;height:32px;border-radius:50%;background:rgba(124,58,237,.2);color:#a78bfa;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">${ini(s.nombre)}</div>
+    <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s.nombre}</div>
+    <div style="font-size:11px;color:var(--t3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s.archivo||'—'}</div></div>
+    <button class="btn btpu sm" onclick="abrirRev('${s.id}')"><i class="ti ti-eye"></i> Revisar</button>
+  </div>`).join('');
+}
+async function loadDashNotifs(){
+  const el=document.getElementById('d-notif');
+  if(CFG.demo){el.innerHTML=`<div class="ni"><div class="ni-ic" style="background:rgba(16,185,129,.1);color:var(--a3)"><i class="ti ti-mail"></i></div><div><div style="font-size:12px;font-weight:600">Correo enviado a Laura Pérez</div><div style="font-size:10px;color:var(--t3)">Impresión lista para recoger · hace 20 min</div></div></div><div class="ni"><div class="ni-ic" style="background:rgba(0,200,240,.1);color:var(--accent)"><i class="ti ti-mail"></i></div><div><div style="font-size:12px;font-weight:600">Correo enviado a Andrés García</div><div style="font-size:10px;color:var(--t3)">Impresión iniciada · hace 1h</div></div></div>`;return}
+  if(!SB){el.innerHTML='<div style="text-align:center;padding:20px;color:var(--t3);font-size:13px">Configura Supabase para ver historial</div>';return}
+  const{data}=await SB.from('notificaciones').select('*,solicitudes(nombre,email)').order('created_at',{ascending:false}).limit(5);
+  if(!data||!data.length){el.innerHTML='<div style="text-align:center;padding:20px;color:var(--t3);font-size:13px">Sin correos enviados aún</div>';return}
+  el.innerHTML=data.map(n=>`<div class="ni"><div class="ni-ic" style="background:rgba(16,185,129,.1);color:var(--a3)"><i class="ti ti-mail"></i></div><div><div style="font-size:12px;font-weight:600">Correo a ${n.solicitudes?.nombre||'—'}</div><div style="font-size:10px;color:var(--t3)">${n.tipo||'—'} · ${fmtDT(n.created_at)}</div></div></div>`).join('');
+}
+async function loadSols(){renderColaTable(await getSols())}
+async function loadFin(){
+  const sols=await getSols();
+  const ing=sols.filter(s=>s.status==='done').reduce((a,s)=>a+(s.costo||0),0);
+  let gasto=0,comps=[];
+  if(!CFG.demo&&SB){const{data}=await SB.from('compras').select('*').order('created_at',{ascending:false});comps=data||[];gasto=comps.reduce((a,c)=>a+(c.costo||0),0)}
+  else{comps=[{material:'PLA Blanco 1kg',peso:1,proveedor:'Filamentos3D.co',costo:55000,fuente:'Pagos de estudiantes',created_at:new Date().toISOString()}];gasto=55000}
+  document.getElementById('fi').textContent=fmt(ing);
+  document.getElementById('fg').textContent=fmt(gasto);
+  document.getElementById('fb').textContent=fmt(ing-gasto);
+  document.getElementById('ft').textContent='$'+CFG.pg;
+  const ti=document.getElementById('tb-ing');
+  const done=sols.filter(s=>s.status==='done');
+  ti.innerHTML=done.length?done.map(s=>`<tr><td style="font-weight:600;font-size:12px">${s.nombre}</td><td style="font-family:var(--mono);font-size:11px;color:var(--t3)">${s.archivo||'—'}</td><td style="font-family:var(--mono)">${s.gramos||0}g</td><td style="font-family:var(--mono);font-weight:700;color:var(--a3)">${fmt(s.costo||0)}</td><td style="font-size:11px;color:var(--t3)">${fmtDate(s.created_at)}</td></tr>`).join(''):'<tr><td colspan="5" class="te">Sin ingresos registrados</td></tr>';
+  const tc2=document.getElementById('tb-comp');
+  tc2.innerHTML=comps.length?comps.map(c=>`<tr><td style="font-weight:600;font-size:12px">${c.material}</td><td style="font-family:var(--mono)">${c.peso}kg</td><td style="font-family:var(--mono);font-weight:700;color:var(--danger)">${fmt(c.costo)}</td><td><span class="badge bd2" style="font-size:10px">${c.fuente}</span></td><td style="font-size:11px;color:var(--t3)">${fmtDate(c.created_at)}</td></tr>`).join(''):'<tr><td colspan="5" class="te">Sin compras registradas</td></tr>';
+}
+
+// ── COLA TABLE ──
+function renderColaTable(data){
+  const tbody=document.getElementById('tb-cola');
+  const fil=curFilter==='todas'?data:data.filter(s=>s.status===curFilter);
+  const sorted=[...fil].sort((a,b)=>new Date(a.created_at)-new Date(b.created_at));
+  if(!sorted.length){tbody.innerHTML='<tr><td colspan="8" class="te">Sin solicitudes para mostrar</td></tr>';return}
+  const sb={review:'<span class="badge br"><i class="ti ti-eye"></i> Por revisar</span>',pending:'<span class="badge bp2"><i class="ti ti-clock"></i> En cola</span>',printing:'<span class="badge bi"><i class="ti ti-printer"></i> Imprimiendo</span>',ready:'<span class="badge bg3"><i class="ti ti-check"></i> Lista</span>',done:'<span class="badge bd2">Entregada</span>',cancelled:'<span class="badge bc">Cancelada</span>'};
+  let pos=0;
+  tbody.innerHTML=sorted.map(s=>{
+    const inQ=['pending','printing'].includes(s.status);
+    if(inQ)pos++;
+    const dl=s.deadline?new Date(s.deadline+'T12:00:00'):null;
+    const days=dl?Math.ceil((dl-new Date())/(86400000)):null;
+    const dc=days!==null&&days<=2?'var(--danger)':days!==null&&days<=5?'var(--warn)':'var(--t2)';
+    const acts=s.status==='review'?`<button class="btn btpu sm" onclick="abrirRev('${s.id}')"><i class="ti ti-eye"></i> Revisar</button>`:
+      s.status==='pending'?`<button class="btn btp sm" onclick="abrirRev('${s.id}')"><i class="ti ti-player-play"></i></button> <button class="btn btd sm" onclick="chSt('${s.id}','cancelled')"><i class="ti ti-x"></i></button>`:
+      s.status==='printing'?`<button class="btn btg sm" onclick="chSt('${s.id}','ready')"><i class="ti ti-check"></i> Lista</button>`:
+      s.status==='ready'?`<button class="btn bts sm" onclick="chSt('${s.id}','done')"><i class="ti ti-package"></i> Entregar</button>`:'—';
+    return`<tr>
+      <td><span style="font-family:var(--mono);font-size:12px;color:${inQ?'var(--warn)':'var(--t4)'}">${inQ?pos:'—'}</span></td>
+      <td><div style="display:flex;align-items:center;gap:8px"><div style="width:28px;height:28px;border-radius:50%;background:rgba(0,200,240,.15);color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">${ini(s.nombre)}</div><div><div style="font-size:13px;font-weight:600">${s.nombre}</div><div style="font-size:10px;color:var(--t3)">${s.codigo||s.email}</div></div></div></td>
+      <td><div style="display:flex;align-items:center;gap:6px"><i class="ti ti-file-3d" style="color:var(--a3);font-size:14px"></i><div><div style="font-size:11px;font-family:var(--mono);max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${s.archivo||'—'}</div><div style="font-size:10px;color:var(--t3)">${s.gramos||0}g · ${s.horas||0}h</div></div></div></td>
+      <td><span class="badge bd2">${s.material||'—'}</span></td>
+      <td style="font-size:12px;font-weight:600;color:${dc}">${s.deadline||'—'}${days!==null?`<span style="font-size:10px"> (${days}d)</span>`:''}</td>
+      <td style="font-family:var(--mono);font-weight:700;color:var(--a3)">${fmt(s.costo||0)}</td>
+      <td>${sb[s.status]||s.status}</td>
+      <td style="display:flex;gap:4px;flex-wrap:nowrap">${acts}</td>
+    </tr>`;
+  }).join('');
+}
+function fc(f,btn){document.querySelectorAll('.tbb').forEach(b=>b.classList.remove('active'));btn.classList.add('active');curFilter=f;loadSols()}
+
+// ── REVISAR MODAL ──
+async function abrirRev(id){
+  reviewId=id;
+  const all=await getSols();
+  const s=all.find(x=>x.id===id);
+  if(!s)return;
+  document.getElementById('rev-t').textContent=`Solicitud · ${s.nombre}`;
+  const dl=s.deadline?new Date(s.deadline+'T12:00:00'):null;
+  const days=dl?Math.ceil((dl-new Date())/86400000):null;
+  document.getElementById('rev-b').innerHTML=`
+    <div class="g2" style="margin-bottom:14px">
+      <div><div style="font-size:10px;color:var(--t3);margin-bottom:3px">ESTUDIANTE</div><div style="font-weight:700">${s.nombre}</div><div style="font-size:12px;color:var(--t3)">${s.email}</div><div style="font-size:12px;color:var(--t3)">${s.codigo||'—'} · ${s.programa||'—'}</div></div>
+      <div><div style="font-size:10px;color:var(--t3);margin-bottom:3px">MATERIA</div><div style="font-weight:700">${s.materia||'Sin especificar'}</div><div style="font-size:12px;color:var(--t3)">${s.docente||'—'}</div></div>
+    </div>
+    <div style="background:var(--bg3);border-radius:var(--r2);padding:14px;margin-bottom:14px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px"><i class="ti ti-file-3d" style="font-size:28px;color:var(--a3)"></i><div><div style="font-size:13px;font-weight:700">${s.archivo||'—'}</div><div style="font-size:11px;color:var(--t3)">${s.file_size?Math.round(s.file_size/1024)+'KB':'—'}</div></div></div>
+      <div class="g2">
+        <div><div style="font-size:10px;color:var(--t3)">Material</div><div style="font-weight:600">${s.material}</div></div>
+        <div><div style="font-size:10px;color:var(--t3)">Fecha límite</div><div style="font-weight:700;color:${days!==null&&days<=2?'var(--danger)':'var(--warn)'}">${s.deadline||'—'}${days!==null?` (${days}d)`:''}</div></div>
+        <div><div style="font-size:10px;color:var(--t3)">Gramos · Horas</div><div style="font-weight:600">${s.gramos||0}g · ${s.horas||0}h</div></div>
+        <div><div style="font-size:10px;color:var(--t3)">Costo estimado</div><div style="font-weight:700;color:var(--a3)">${fmt(s.costo||0)}</div></div>
+      </div>
+      ${s.obs?`<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:12px;color:var(--t2)">${s.obs}</div>`:''}
+    </div>
+    <div class="ff"><label>Asignar impresora</label><select id="rev-imp">${PRINTERS.map(p=>`<option value="${p.name}">${p.name} (${p.status==='idle'?'Disponible':p.status==='printing'?'Ocupada':'Error'})</option>`).join('')}</select></div>`;
+  oM('m-rev');
+}
+async function adminAcc(acc){
+  const imp=document.getElementById('rev-imp')?.value||PRINTERS[0].name;
+  let upd={};
+  if(acc==='aprobar'){upd={status:'printing',impresora:imp};const p=PRINTERS.find(x=>x.name===imp);if(p){p.status='printing';p.pr=5}await sendEmail(reviewId,'inicio')}
+  else if(acc==='queue'){upd={status:'pending'}}
+  else{upd={status:'cancelled'};await sendEmail(reviewId,'rechazado')}
+  const{error}=await dbUpd('solicitudes',reviewId,upd);
+  if(error){toast('Error','e',error.message);return}
+  cM('m-rev');renderPrinters();await loadAll();await loadSols();
+  toast(acc==='aprobar'?'Aprobado — correo enviado':acc==='queue'?'En cola':'Rechazado',acc==='rechazar'?'w':'s');
+}
+async function chSt(id,ns){
+  const{error}=await dbUpd('solicitudes',id,{status:ns});
+  if(error){toast('Error','e',error.message);return}
+  if(ns==='ready')await sendEmail(id,'listo');
+  toast(`→ ${ns}`,'s');
+  await loadAll();await loadSols();
+}
+
+// ── ENVIAR CORREOS VÍA RESEND ──
+async function sendEmail(id,tipo,custom=''){
+  const all=await getSols();
+  const s=all.find(x=>x.id===id);
+  if(!s)return;
+  const tpls={
+    inicio:{sub:'Tu impresión 3D comenzó — Sala STEAM UIS Salón 117',html:`<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto"><div style="background:#c00;padding:20px 24px;border-radius:8px 8px 0 0"><h2 style="color:#fff;margin:0;font-size:18px">STEAM 3D Manager · Salón 117 UIS</h2></div><div style="background:#f9f9f9;padding:24px;border-radius:0 0 8px 8px;border:1px solid #eee"><p style="font-size:15px">Hola <strong>${s.nombre}</strong>,</p><p style="font-size:14px;color:#555;line-height:1.7">Tu impresión 3D ha comenzado en <strong>${s.impresora||'la impresora asignada'}</strong>.</p><div style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:16px;margin:16px 0"><div style="font-size:13px;color:#888">Archivo</div><div style="font-size:15px;font-weight:700">${s.archivo||'—'}</div><div style="font-size:13px;color:#888;margin-top:8px">Material: ${s.material} · ${s.gramos||0}g · Costo: <strong style="color:#c00">${fmt(s.costo||0)}</strong></div></div><p style="font-size:14px;color:#555">Te notificaremos cuando esté lista para recoger. Lleva tu carné.</p><div style="background:#c00;color:#fff;padding:10px 16px;border-radius:6px;font-size:13px;margin-top:12px"><strong>Sala STEAM · Salón 117 · Universidad Industrial de Santander</strong></div></div></div>`},
+    listo:{sub:'¡Tu impresión 3D está lista! — Sala STEAM UIS Salón 117',html:`<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto"><div style="background:#10b981;padding:20px 24px;border-radius:8px 8px 0 0"><h2 style="color:#fff;margin:0">¡Tu impresión está lista para recoger!</h2></div><div style="background:#f9f9f9;padding:24px;border-radius:0 0 8px 8px;border:1px solid #eee"><p style="font-size:15px">Hola <strong>${s.nombre}</strong>,</p><div style="background:#d1fae5;border:1px solid #6ee7b7;border-radius:8px;padding:16px;margin:16px 0"><div style="font-size:16px;font-weight:700;color:#065f46">Pasa al Salón 117 con tu carné UIS</div><div style="font-size:13px;color:#047857;margin-top:6px">Horario: Lunes a viernes · 8:00 am – 6:00 pm</div><div style="font-size:14px;font-weight:700;color:#047857;margin-top:4px">Costo a pagar: ${fmt(s.costo||0)} COP</div></div><p style="font-size:14px;color:#555">Archivo: <strong>${s.archivo||'—'}</strong> · Material: ${s.material}</p><div style="background:#c00;color:#fff;padding:10px 16px;border-radius:6px;font-size:13px"><strong>Sala STEAM · Salón 117 · Universidad Industrial de Santander</strong></div></div></div>`},
+    rechazado:{sub:'Solicitud rechazada — Sala STEAM UIS',html:`<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto"><div style="background:#ef4444;padding:20px 24px;border-radius:8px 8px 0 0"><h2 style="color:#fff;margin:0">Solicitud rechazada</h2></div><div style="background:#f9f9f9;padding:24px;border-radius:0 0 8px 8px;border:1px solid #eee"><p>Hola <strong>${s.nombre}</strong>, tu solicitud para <strong>${s.archivo||'—'}</strong> no pudo ser procesada en este momento.</p><p style="font-size:14px;color:#555">Acércate al Salón 117 o responde este correo para más información.</p><div style="background:#c00;color:#fff;padding:10px 16px;border-radius:6px;font-size:13px"><strong>Sala STEAM · Salón 117 · UIS</strong></div></div></div>`},
+    turno:{sub:'Tu turno se acerca — Sala STEAM UIS Salón 117',html:`<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto"><div style="background:#f59e0b;padding:20px 24px;border-radius:8px 8px 0 0"><h2 style="color:#fff;margin:0">Tu turno se acerca</h2></div><div style="background:#f9f9f9;padding:24px;border-radius:0 0 8px 8px;border:1px solid #eee"><p>Hola <strong>${s.nombre}</strong>, en aproximadamente <strong>30 minutos</strong> comenzará tu impresión en el Salón 117.</p><div style="background:#c00;color:#fff;padding:10px 16px;border-radius:6px;font-size:13px"><strong>Sala STEAM · Salón 117 · UIS</strong></div></div></div>`},
+    custom:{sub:'Mensaje de la Sala STEAM — Salón 117 UIS',html:`<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto"><div style="background:#7c3aed;padding:20px 24px;border-radius:8px 8px 0 0"><h2 style="color:#fff;margin:0">Sala STEAM · Salón 117 UIS</h2></div><div style="background:#f9f9f9;padding:24px;border-radius:0 0 8px 8px;border:1px solid #eee"><p>Hola <strong>${s.nombre}</strong>,</p><p style="font-size:14px;color:#555;line-height:1.7">${custom}</p><div style="background:#c00;color:#fff;padding:10px 16px;border-radius:6px;font-size:13px"><strong>Sala STEAM · Salón 117 · UIS</strong></div></div></div>`}
+  };
+  const tpl=tpls[tipo];if(!tpl)return;
+  if(!CFG.demo&&SB)await SB.from('notificaciones').insert({solicitud_id:String(id),tipo:tpl.sub,mensaje:tpl.sub});
+  if(!CFG.resendKey||CFG.demo){toast(CFG.demo?'Correo simulado (modo demo)':'Correo simulado (sin API Key)','i',s.email);return}
+  try{
+    const r=await fetch('https://api.resend.com/emails',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+CFG.resendKey},body:JSON.stringify({from:CFG.fromEmail,to:s.email,subject:tpl.sub,html:tpl.html})});
+    const d=await r.json();
+    if(d.id){toast('Correo enviado a '+s.email,'s',tpl.sub)}
+    else{toast('Error Resend','e',d.message||JSON.stringify(d))}
+  }catch(err){toast('Error de red','e',err.message)}
+}
+
+// ── NOTIF MODAL ──
+async function openNM(){
+  const sols=await getSols();
+  const sel=document.getElementById('n-sol');
+  sel.innerHTML='<option value="">— Seleccionar solicitud —</option>';
+  sols.filter(s=>!['done','cancelled'].includes(s.status)).forEach(s=>{sel.innerHTML+=`<option value="${s.id}">${s.nombre} · ${s.archivo||'—'} (${s.status})</option>`});
+  setNMsg();oM('m-notif');
+}
+function setNMsg(){const t=document.getElementById('n-tipo').value;const m={listo:'Tu impresión 3D está lista. Pasa al Salón 117 con tu carné UIS. Horario: lun–vie 8am–6pm.',inicio:'Tu impresión 3D ha comenzado en el Salón 117. Te avisaremos cuando esté lista.',turno:'Tu turno se acerca. En ~30 min comenzará tu impresión en el Salón 117.',problema:'Hubo un inconveniente con tu solicitud. Acércate al Salón 117 o responde este correo.',custom:''};document.getElementById('n-msg').value=m[t]||''}
+async function doSendNotif(){
+  const id=document.getElementById('n-sol').value;
+  const tipo=document.getElementById('n-tipo').value;
+  const msg=document.getElementById('n-msg').value.trim();
+  if(!id){toast('Selecciona una solicitud','w');return}
+  if(!msg){toast('El mensaje no puede estar vacío','w');return}
+  await sendEmail(id,tipo,msg);cM('m-notif');await loadDashNotifs();
+}
+
+// ── COMPRA ──
+async function doCompra(){
+  const mat=document.getElementById('c-mat').value;
+  const kg=parseFloat(document.getElementById('c-kg').value)||0;
+  const prov=document.getElementById('c-prov').value.trim()||'—';
+  const cost=parseFloat(document.getElementById('c-cost').value)||0;
+  const fuente=document.getElementById('c-fuente').value;
+  const fecha=document.getElementById('c-fecha').value;
+  if(!kg||!cost){toast('Completa peso y costo','w');return}
+  const btn=document.getElementById('btn-comp');btn.disabled=true;
+  const{error}=await dbIns('compras',{material:mat,peso:kg,proveedor:prov,costo:cost,fuente,created_at:fecha?new Date(fecha).toISOString():new Date().toISOString()});
+  btn.disabled=false;
+  if(error){toast('Error','e',error.message);return}
+  cM('m-compra');toast('Compra registrada','s',fmt(cost));loadFin();
+}
+
+// ── ENVIAR SOLICITUD (ESTUDIANTE) ──
+function calcCosto(g){return Math.round(Math.max(g||CFG.mg,CFG.mg)*CFG.pg)}
+function updCosto(){document.getElementById('sc3').textContent=fmt(calcCosto(parseInt(document.getElementById('sg').value)||0));document.getElementById('spg').textContent=CFG.pg;document.getElementById('smg').textContent=CFG.mg}
+function updC(){CFG.pg=parseInt(document.getElementById('cfg-p')?.value)||120;CFG.mg=parseInt(document.getElementById('cfg-m')?.value)||10;const el=document.getElementById('cfg-prev');if(el)el.textContent=`Mínimo: ${fmt(CFG.mg*CFG.pg)} · $${CFG.pg}/g`;document.getElementById('ft').textContent='$'+CFG.pg}
+function dov(e){e.preventDefault();document.getElementById('dz').classList.add('drag')}
+function dlv(){document.getElementById('dz').classList.remove('drag')}
+function ddf(e){e.preventDefault();dlv();if(e.dataTransfer.files[0])hf(e.dataTransfer.files[0])}
+function hf(file){
+  if(!file)return;
+  if(!['stl','obj','3mf'].includes(file.name.split('.').pop().toLowerCase())){toast('Solo .stl, .obj o .3mf','e');return}
+  selFile=file;
+  document.getElementById('dc').style.display='none';document.getElementById('dp2').style.display='block';
+  document.getElementById('fn2').textContent=file.name;
+  document.getElementById('fsz2').textContent=file.size<1048576?Math.round(file.size/1024)+'KB':(file.size/1048576).toFixed(1)+'MB';
+  document.getElementById('dz').classList.add('hf');toast('Archivo cargado','s',file.name);
+}
+function rmf(e){e.stopPropagation();selFile=null;document.getElementById('dc').style.display='block';document.getElementById('dp2').style.display='none';document.getElementById('dz').classList.remove('hf');document.getElementById('fi2').value=''}
+async function envSol(){
+  const nombre=document.getElementById('sn').value.trim();
+  const email=document.getElementById('se').value.trim();
+  const codigo=document.getElementById('sc2').value.trim();
+  const prog=document.getElementById('sp2').value.trim();
+  const mat=document.getElementById('sm2').value.trim();
+  const doc=document.getElementById('sdoc').value.trim();
+  const material=document.getElementById('smat').value;
+  const dl=document.getElementById('sdl').value;
+  const gramos=parseInt(document.getElementById('sg').value)||20;
+  const horas=parseFloat(document.getElementById('sh').value)||2;
+  const obs=document.getElementById('sob').value;
+  if(!nombre||!email||!codigo){toast('Nombre, correo y código son obligatorios','e');return}
+  if(!dl){toast('Indica la fecha límite','e');return}
+  if(!selFile){toast('Sube tu archivo STL','e');return}
+  const btn=document.getElementById('btn-env');btn.disabled=true;btn.innerHTML='<span class="spin"></span> Enviando...';
+  const costo=calcCosto(gramos);
+  const{data,error}=await dbIns('solicitudes',{nombre,email,codigo,programa:prog,materia:mat,docente:doc,archivo:selFile.name,file_size:selFile.size,material,deadline:dl,gramos,horas,obs,costo,status:'review'});
+  btn.disabled=false;btn.innerHTML='<i class="ti ti-send"></i> Enviar Solicitud';
+  if(error){toast('Error enviando','e',error.message);return}
+  ['sn','se','sc2','sp2','sm2','sdoc','sob'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('sdl').value='';document.getElementById('sg').value='';document.getElementById('sh').value='';
+  rmf({stopPropagation:()=>{}});
+  toast('Solicitud enviada','s','Recibirás un correo cuando sea revisada');
+  setTimeout(()=>{document.getElementById('bi').value=email;buscar();sS('estado',document.querySelectorAll('#sn .nt')[1])},700);
+}
+
+// ── BUSCAR ESTADO ──
+async function buscar(){
+  const q=document.getElementById('bi').value.trim().toLowerCase();
+  if(!q)return;
+  const all=await getSols();
+  const found=all.filter(s=>s.email?.toLowerCase().includes(q)||s.codigo?.toLowerCase().includes(q));
+  const el=document.getElementById('er');
+  if(!found.length){el.innerHTML=`<div class="card" style="text-align:center;padding:32px"><i class="ti ti-mood-sad" style="font-size:40px;color:var(--t3);display:block;margin-bottom:12px"></i><div style="color:var(--t3)">Sin resultados para "<strong>${q}</strong>"</div></div>`;return}
+  el.innerHTML=found.map(rEstCard).join('');
+}
+function rEstCard(s){
+  const lbl={review:'En revisión',pending:'En cola',printing:'Imprimiendo',ready:'¡Lista para recoger!',done:'Entregada',cancelled:'Cancelada'};
+  const col={review:'var(--a2)',pending:'var(--warn)',printing:'var(--accent)',ready:'var(--a3)',done:'var(--t2)',cancelled:'var(--danger)'};
+  const steps=[
+    {l:'Solicitud enviada',d:true,a:false,s:fmtDT(s.created_at)},
+    {l:'Revisión del administrador',d:s.status!=='review',a:s.status==='review',s:s.status==='review'?'Pendiente de revisión':'Aprobada'},
+    {l:'En cola de impresión',d:['printing','ready','done'].includes(s.status),a:s.status==='pending',s:s.status==='pending'?'Esperando impresora':'Completado'},
+    {l:`Imprimiendo en ${s.impresora||'impresora asignada'}`,d:['ready','done'].includes(s.status),a:s.status==='printing',s:s.status==='printing'?'En proceso ahora':['ready','done'].includes(s.status)?'Completado':'Pendiente'},
+    {l:'Lista para recoger en Salón 117',d:s.status==='done',a:s.status==='ready',s:s.status==='ready'?'Pasa con tu carné UIS':s.status==='done'?'Entregada':'Pendiente'}
+  ];
+  const posBox=s.status==='pending'?`<div style="display:flex;align-items:center;gap:12px;padding:12px;background:rgba(245,158,11,.07);border-radius:var(--r2);border:1px solid rgba(245,158,11,.25);margin-bottom:14px"><div class="qp q1"><i class="ti ti-clock"></i></div><div><div style="font-size:13px;font-weight:600">En cola · orden de llegada</div><div style="font-size:12px;color:var(--t2)">Te notificaremos por correo cuando inicie tu impresión.</div></div></div>`:'';
+  const rdyBox=s.status==='ready'?`<div style="padding:14px;background:rgba(16,185,129,.1);border-radius:var(--r2);border:1px solid rgba(16,185,129,.3);margin-bottom:14px"><div style="font-size:15px;font-weight:700;color:var(--a3)">¡Tu impresión está lista!</div><div style="font-size:13px;color:var(--t2);margin-top:4px">Pasa al <strong>Salón 117</strong> con tu carné UIS · Lun–Vie 8am–6pm</div><div style="font-size:14px;font-weight:700;color:var(--a3);margin-top:4px">Costo a pagar: ${fmt(s.costo||0)} COP</div></div>`:'';
+  return`<div class="card" style="margin-bottom:14px">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+      <div style="width:40px;height:40px;border-radius:50%;background:rgba(0,200,240,.15);color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0">${ini(s.nombre)}</div>
+      <div style="flex:1"><div style="font-size:15px;font-weight:700">${s.nombre}</div><div style="font-size:12px;color:var(--t3)">${s.archivo||'—'} · ${s.material||''} · ${s.gramos||0}g</div></div>
+      <div style="text-align:right"><div style="font-size:13px;font-weight:700;color:${col[s.status]}">${lbl[s.status]}</div><div style="font-size:11px;color:var(--t3)">${fmt(s.costo||0)}</div></div>
+    </div>
+    ${posBox}${rdyBox}
+    <div class="tl">${steps.map(st=>`<div class="tli"><div class="tld ${st.d?'done':st.a?'active':''}"></div><div class="tlt" style="color:${st.d||st.a?'var(--text)':'var(--t3)'}">${st.l}</div><div class="tls">${st.s}</div></div>`).join('')}</div>
+  </div>`;
+}
+
+// ── COLA PÚBLICA ──
+async function loadPubQ(){
+  const sols=await getSols();
+  const cola=sols.filter(s=>['pending','printing'].includes(s.status)).sort((a,b)=>new Date(a.created_at)-new Date(b.created_at));
+  const pp=document.getElementById('pup');
+  if(pp)pp.innerHTML=PRINTERS.map(p=>`<div class="pc ${p.status}"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px"><div style="font-size:15px;font-weight:700"><i class="ti ti-printer" style="color:var(--accent)"></i> ${p.name}</div><span style="font-size:12px"><span class="dot d${p.status[0]}"></span>${{idle:'Disponible',printing:'Imprimiendo',error:'Error'}[p.status]}</span></div>${p.status==='printing'?`<div style="font-size:11px;font-family:var(--mono);color:var(--t3);margin-bottom:5px">${p.job||'—'}</div><div class="pw"><div class="pb" style="width:${p.pr}%;background:var(--accent)"></div></div><div style="font-size:11px;color:var(--accent);font-family:var(--mono);margin-top:4px">${p.pr}% completado</div>`:p.status==='idle'?`<div style="font-size:12px;color:var(--a3)"><i class="ti ti-check"></i> Lista para imprimir</div>`:`<div style="font-size:12px;color:var(--danger)"><i class="ti ti-alert-triangle"></i> En mantenimiento</div>`}</div>`).join('');
+  const pql=document.getElementById('pql');
+  if(!cola.length){pql.innerHTML='<div style="text-align:center;padding:30px;color:var(--t3)">Cola vacía · ¡Sé el primero en solicitar!</div>';return}
+  pql.innerHTML=cola.map((s,i)=>`<div class="pi ${i===0&&s.status==='pending'?'top':s.status==='printing'?'pnow':''}"><div class="qp ${i===0?'q1':i===1?'q2':'qn'}">${s.status==='printing'?'<i class="ti ti-printer"></i>':'#'+(i+1)}</div><div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600">${s.nombre}</div><div style="font-size:11px;color:var(--t3);font-family:var(--mono);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s.archivo||'—'} · ${s.material||''}</div></div><div style="text-align:right;flex-shrink:0"><div style="font-size:10px;color:var(--t3)">Fecha límite</div><div style="font-size:12px;font-weight:600;color:var(--warn)">${s.deadline||'—'}</div></div></div>`).join('');
+}
+
+// ── IMPRESORAS ──
+function renderPrinters(){
+  const sl={idle:'Disponible',printing:'Imprimiendo',error:'Error'};
+  const html=p=>`<div class="pc ${p.status}"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px"><div style="font-size:15px;font-weight:700"><i class="ti ti-printer" style="color:var(--accent)"></i> ${p.name}</div><span style="font-size:12px"><span class="dot d${p.status[0]}"></span>${sl[p.status]}</span></div>${p.status==='printing'?`<div style="font-size:11px;font-family:var(--mono);color:var(--t3);margin-bottom:5px">${p.job||'—'}</div><div class="pw"><div class="pb" style="width:${p.pr}%;background:var(--accent)"></div></div><div style="font-size:11px;color:var(--accent);font-family:var(--mono);margin-top:4px">${p.pr}% completado</div>`:p.status==='idle'?`<div style="font-size:12px;color:var(--a3)"><i class="ti ti-check"></i> Lista para nueva impresión</div>`:`<div style="font-size:12px;color:var(--danger)"><i class="ti ti-alert-triangle"></i> Requiere revisión</div>`}<div style="margin-top:10px;display:flex;gap:6px">${p.status==='idle'?`<button class="btn bts sm" onclick="setPr(${p.id},'printing')"><i class="ti ti-player-play"></i> Activar</button>`:''}${p.status==='printing'?`<button class="btn btg sm" onclick="setPr(${p.id},'idle')"><i class="ti ti-check"></i> Terminó</button>`:''}${p.status==='error'?`<button class="btn bts sm" onclick="setPr(${p.id},'idle')"><i class="ti ti-refresh"></i> Resetear</button>`:''}<button class="btn btd sm ic" onclick="setPr(${p.id},'error')" title="Marcar error"><i class="ti ti-alert-triangle"></i></button></div></div>`;
+  const pd=document.getElementById('pd');if(pd)pd.innerHTML=PRINTERS.map(html).join('');
+}
+function setPr(id,st){const p=PRINTERS.find(x=>x.id===id);if(!p)return;p.status=st;if(st==='idle'){p.pr=0;p.job=null}if(st==='printing')p.pr=5;renderPrinters();toast(p.name+': '+st,st==='error'?'e':'s')}
+
+// ── INVENTARIO ──
+function renderInv(){
+  const el=document.getElementById('inv');if(!el)return;
+  el.innerHTML=INV.map((f,i)=>`<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)"><div style="width:13px;height:13px;border-radius:50%;background:${f.c};border:2px solid rgba(255,255,255,.15);flex-shrink:0"></div><div style="flex:1"><div style="font-size:12px;font-weight:600">${f.n}</div><div class="pw" style="margin-top:4px"><div class="pb" style="width:${Math.min(f.s/10,100)}%;background:${f.s<200?'var(--danger)':f.s<400?'var(--warn)':'var(--a3)'}"></div></div></div><div style="font-family:var(--mono);font-size:12px;font-weight:700;color:${f.s<200?'var(--danger)':f.s<400?'var(--warn)':'var(--a3)'};min-width:44px;text-align:right">${f.s}g</div><div style="display:flex;gap:3px"><button class="btn bts sm ic" onclick="aInv(${i},-50)"><i class="ti ti-minus"></i></button><button class="btn btp sm ic" onclick="aInv(${i},1000)"><i class="ti ti-plus"></i></button></div></div>`).join('');
+}
+function aInv(i,d){INV[i].s=Math.max(0,INV[i].s+d);renderInv();toast(d>0?`+1kg ${INV[i].n}`:`-50g ${INV[i].n}`,d>0?'s':'w')}
+
+// ── QR ──
+function genQR(){
+  const url=window.location.href.split('?')[0]+'?view=student';
+  const el=document.getElementById('qru');if(el)el.textContent=url;
+  try{const c=document.getElementById('qrc');if(c)QRCode.toCanvas(c,url,{width:180,margin:1,color:{dark:'#000000',light:'#ffffff'}})}catch(e){}
+}
+function copyQR(){navigator.clipboard.writeText(document.getElementById('qru')?.textContent||'').then(()=>toast('URL copiada','s'))}
+
+// ── CÁMARAS ──
+function apCam(n){
+  const url=document.getElementById('cu'+n).value.trim();
+  const wrap=document.getElementById('p-cam').querySelector('.cam-w:nth-of-type('+n+')') || document.querySelectorAll('.cam-w')[n-1];
+  const ov=document.getElementById('co'+n);
+  if(!url||!wrap)return;
+  ov.style.display='none';
+  const old=wrap.querySelector('img');if(old)old.remove();
+  const img=document.createElement('img');
+  img.src=url;img.alt='Creality Hi #'+n;img.style.cssText='width:100%;height:100%;object-fit:cover';
+  img.onerror=()=>{ov.innerHTML=`<i class="ti ti-wifi-off" style="font-size:30px"></i><div style="font-size:12px;margin-top:8px">No se puede conectar</div><div style="font-size:11px;color:var(--t3);margin-top:4px">${url}</div>`;ov.style.display='flex'};
+  wrap.appendChild(img);
+  CFG['cam'+n]=url;localStorage.setItem('s3d',JSON.stringify(CFG));
+  toast('Cámara #'+n+' conectada','s');
+}
+
+// ── BOOT ──
+(function(){
+  const saved=localStorage.getItem('s3d');
+  const params=new URLSearchParams(window.location.search);
+  const forceStudent=params.get('view')==='student';
+  if(saved){
+    try{
+      const c=JSON.parse(saved);
+      CFG={...CFG,...c};
+      document.getElementById('cfg-sbu').value=CFG.sbUrl||'';
+      document.getElementById('cfg-sbk').value=CFG.sbKey||'';
+      document.getElementById('cfg-rk').value=CFG.resendKey||'';
+      document.getElementById('cfg-from').value=CFG.fromEmail||'';
+      document.getElementById('cfg-pw').value=CFG.adminPw||'';
+      document.getElementById('cfg-c1').value=CFG.cam1||'';
+      document.getElementById('cfg-c2').value=CFG.cam2||'';
+      if(CFG.sbUrl&&CFG.sbKey)initSB();
+      launch();
+      isAdminAuth=false;
+      swV('student');
+      return;
+    }catch(e){console.error(e)}
+  }
+  if(forceStudent||true){
+    if(forceStudent){
+      document.getElementById('setup').style.display='none';
+      document.getElementById('nav').style.display='flex';
+      document.getElementById('mc').style.display='block';
+      CFG.demo=true;isAdminAuth=false;
+      swV('student');
+      document.getElementById('dbs').textContent='portal';
+      document.getElementById('dbs').style.color='var(--a3)';
+      document.getElementById('dbs').style.borderColor='rgba(16,185,129,.3)';
+    }
+  }
+})();
+</script>
+</body>
+</html>
