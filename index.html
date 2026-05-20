@@ -848,11 +848,28 @@ async function sendEmail(id,tipo,custom=''){
   if(!CFG.demo&&SB)await SB.from('notificaciones').insert({solicitud_id:String(id),tipo:tpl.sub,mensaje:tpl.sub});
   if(!CFG.resendKey||CFG.demo){toast(CFG.demo?'Correo simulado (modo demo)':'Correo simulado (sin API Key)','i',s.email);return}
   try{
-    const r=await fetch('https://api.resend.com/emails',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+CFG.resendKey},body:JSON.stringify({from:CFG.fromEmail,to:s.email,subject:tpl.sub,html:tpl.html})});
+    // Llamar a la función serverless de Vercel (evita el bloqueo CORS del navegador)
+    const endpoint='/api/send-email';
+    const r=await fetch(endpoint,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        to:s.email,
+        subject:tpl.sub,
+        html:tpl.html,
+        from:CFG.fromEmail||'onboarding@resend.dev',
+        apiKey:CFG.resendKey
+      })
+    });
     const d=await r.json();
-    if(d.id){toast('Correo enviado a '+s.email,'s',tpl.sub)}
-    else{toast('Error Resend','e',d.message||JSON.stringify(d))}
-  }catch(err){toast('Error de red','e',err.message)}
+    if(d.success||d.id){
+      toast('Correo enviado a '+s.email,'s',tpl.sub);
+    } else {
+      toast('Error enviando correo','e',d.error||JSON.stringify(d));
+    }
+  }catch(err){
+    toast('Error de red','e','Verifica que /api/send-email existe en Vercel · '+err.message);
+  }
 }
 
 // ── NOTIF MODAL ──
