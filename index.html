@@ -481,13 +481,13 @@ select option{background:var(--bg2)}
   <div class="card card-g">
     <div class="ct"><i class="ti ti-forms" style="color:var(--a3)"></i> Nueva Solicitud de Impresión 3D</div>
     <div style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Datos personales</div>
-    <div class="fr"><div><label>Nombre completo *</label><input id="sn" placeholder="Laura Pérez García"></div><div><label>Correo institucional UIS *</label><input type="email" id="se" placeholder="l.perez@correo.uis.edu.co"></div></div>
-    <div class="fr"><div><label>Código de estudiante *</label><input id="sc2" placeholder="2022035478"></div><div><label>Programa académico</label><input id="sp2" placeholder="Ing. Mecatrónica"></div></div>
-    <div class="fr" style="margin-bottom:18px"><div><label>Materia / Proyecto</label><input id="sm2" placeholder="Diseño de Máquinas"></div><div><label>Docente</label><input id="sdoc" placeholder="Dr. Carlos Ramírez"></div></div>
+    <div class="fr"><div><label>Nombre completo *</label><input id="f-nombre" placeholder="Laura Pérez García"></div><div><label>Correo institucional UIS *</label><input type="email" id="f-email" placeholder="l.perez@correo.uis.edu.co"></div></div>
+    <div class="fr"><div><label>Código de estudiante *</label><input id="f-codigo" placeholder="2022035478"></div><div><label>Programa académico</label><input id="f-prog" placeholder="Ing. Mecatrónica"></div></div>
+    <div class="fr" style="margin-bottom:18px"><div><label>Materia / Proyecto</label><input id="f-materia" placeholder="Diseño de Máquinas"></div><div><label>Docente</label><input id="f-docente" placeholder="Dr. Carlos Ramírez"></div></div>
     <div style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Detalles de la impresión</div>
-    <div class="fr"><div><label>Material *</label><select id="smat"><option>PLA</option><option>ABS</option><option>PETG</option><option>TPU (Flexible)</option></select></div><div><label>Fecha límite que necesitas *</label><input type="date" id="sdl"></div></div>
-    <div class="fr"><div><label>Gramos estimados</label><input type="number" id="sg" placeholder="50" min="1" oninput="updCosto()"></div><div><label>Tiempo estimado (horas)</label><input type="number" id="sh" placeholder="3" min="0.5" step="0.5"></div></div>
-    <div class="ff"><label>Descripción / Observaciones</label><textarea id="sob" rows="2" placeholder="Porcentaje de relleno, escala, propósito del modelo..."></textarea></div>
+    <div class="fr"><div><label>Material *</label><select id="f-material"><option>PLA</option><option>ABS</option><option>PETG</option><option>TPU (Flexible)</option></select></div><div><label>Fecha límite que necesitas *</label><input type="date" id="f-deadline"></div></div>
+    <div class="fr"><div><label>Gramos estimados</label><input type="number" id="f-gramos" placeholder="50" min="1" oninput="updCosto()"></div><div><label>Tiempo estimado (horas)</label><input type="number" id="f-horas" placeholder="3" min="0.5" step="0.5"></div></div>
+    <div class="ff"><label>Descripción / Observaciones</label><textarea id="f-obs" rows="2" placeholder="Porcentaje de relleno, escala, propósito del modelo..."></textarea></div>
     <div style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Archivo STL *</div>
     <div class="dz" id="dz" onclick="document.getElementById('fi2').click()" ondragover="dov(event)" ondragleave="dlv()" ondrop="ddf(event)">
       <input type="file" id="fi2" accept=".stl,.obj,.3mf" style="display:none" onchange="hf(this.files[0])">
@@ -584,7 +584,7 @@ function launch(){
   pill.style.color=CFG.demo?'var(--warn)':'var(--a3)';
   pill.style.borderColor=CFG.demo?'rgba(245,158,11,.3)':'rgba(16,185,129,.3)';
   document.getElementById('dn').textContent='Sala STEAM · Salón 117 · UIS · '+new Date().toLocaleDateString('es-CO',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
-  document.getElementById('sdl').min=new Date().toISOString().split('T')[0];
+  document.getElementById('f-deadline').min=new Date().toISOString().split('T')[0];
   updC();genQR();
   if(CFG.cam1){document.getElementById('cu1').value=CFG.cam1;apCam(1)}
   if(CFG.cam2){document.getElementById('cu2').value=CFG.cam2;apCam(2)}
@@ -891,7 +891,7 @@ async function doCompra(){
 
 // ── ENVIAR SOLICITUD (ESTUDIANTE) ──
 function calcCosto(g){return Math.round(Math.max(g||CFG.mg,CFG.mg)*CFG.pg)}
-function updCosto(){document.getElementById('sc3').textContent=fmt(calcCosto(parseInt(document.getElementById('sg').value)||0));document.getElementById('spg').textContent=CFG.pg;document.getElementById('smg').textContent=CFG.mg}
+function updCosto(){document.getElementById('sc3').textContent=fmt(calcCosto(parseInt(document.getElementById('f-gramos')?.value)||0));document.getElementById('spg').textContent=CFG.pg;document.getElementById('smg').textContent=CFG.mg}
 function updC(){CFG.pg=parseInt(document.getElementById('cfg-p')?.value)||120;CFG.mg=parseInt(document.getElementById('cfg-m')?.value)||10;const el=document.getElementById('cfg-prev');if(el)el.textContent=`Mínimo: ${fmt(CFG.mg*CFG.pg)} · $${CFG.pg}/g`;document.getElementById('ft').textContent='$'+CFG.pg}
 function dov(e){e.preventDefault();document.getElementById('dz').classList.add('drag')}
 function dlv(){document.getElementById('dz').classList.remove('drag')}
@@ -907,17 +907,17 @@ function hf(file){
 }
 function rmf(e){e.stopPropagation();selFile=null;document.getElementById('dc').style.display='block';document.getElementById('dp2').style.display='none';document.getElementById('dz').classList.remove('hf');document.getElementById('fi2').value=''}
 async function envSol(){
-  const nombre=document.getElementById('sn').value.trim();
-  const email=document.getElementById('se').value.trim();
-  const codigo=document.getElementById('sc2').value.trim();
-  const prog=document.getElementById('sp2').value.trim();
-  const mat=document.getElementById('sm2').value.trim();
-  const doc=document.getElementById('sdoc').value.trim();
-  const material=document.getElementById('smat').value;
-  const dl=document.getElementById('sdl').value;
-  const gramos=parseInt(document.getElementById('sg').value)||20;
-  const horas=parseFloat(document.getElementById('sh').value)||2;
-  const obs=document.getElementById('sob').value;
+  const nombre=document.getElementById('f-nombre').value.trim();
+  const email=document.getElementById('f-email').value.trim();
+  const codigo=document.getElementById('f-codigo').value.trim();
+  const prog=document.getElementById('f-prog').value.trim();
+  const mat=document.getElementById('f-materia').value.trim();
+  const doc=document.getElementById('f-docente').value.trim();
+  const material=document.getElementById('f-material').value;
+  const dl=document.getElementById('f-deadline').value;
+  const gramos=parseInt(document.getElementById('f-gramos').value)||20;
+  const horas=parseFloat(document.getElementById('f-horas').value)||2;
+  const obs=document.getElementById('f-obs').value;
   if(!nombre||!email||!codigo){toast('Nombre, correo y código son obligatorios','e');return}
   if(!dl){toast('Indica la fecha límite','e');return}
   if(!selFile){toast('Sube tu archivo STL','e');return}
@@ -926,8 +926,8 @@ async function envSol(){
   const{data,error}=await dbIns('solicitudes',{nombre,email,codigo,programa:prog,materia:mat,docente:doc,archivo:selFile.name,file_size:selFile.size,material,deadline:dl,gramos,horas,obs,costo,status:'review'});
   btn.disabled=false;btn.innerHTML='<i class="ti ti-send"></i> Enviar Solicitud';
   if(error){toast('Error enviando','e',error.message);return}
-  ['sn','se','sc2','sp2','sm2','sdoc','sob'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('sdl').value='';document.getElementById('sg').value='';document.getElementById('sh').value='';
+  ['f-nombre','f-email','f-codigo','f-prog','f-materia','f-docente','f-obs'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('f-deadline').value='';document.getElementById('f-gramos').value='';document.getElementById('f-horas').value='';
   rmf({stopPropagation:()=>{}});
   toast('Solicitud enviada','s', CFG.demo ? 'Modo demo: guardada en memoria (no persiste al recargar)' : 'Recibirás un correo cuando sea revisada');
   setTimeout(()=>{document.getElementById('bi').value=email;buscar();sS('estado',document.querySelectorAll('#sn .nt')[1])},700);
