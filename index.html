@@ -654,9 +654,17 @@ function sS(pg,btn){
 }
 
 // ── DATA ──
+let demoSols=[];  // solicitudes creadas en demo/live sin SB
 async function getSols(filter){
-  if(CFG.demo)return getDemoData(filter);
-  if(!SB)return[];
+  if(CFG.demo){
+    const base=getDemoData();
+    const all=[...base,...demoSols];
+    return(!filter||filter==='todas')?all:all.filter(s=>s.status===filter);
+  }
+  if(!SB){
+    toast('Sin conexión a Supabase. Verifica la configuración.','w');
+    return[...demoSols];
+  }
   let q=SB.from('solicitudes').select('*').order('created_at',{ascending:true});
   if(filter&&filter!=='todas')q=q.eq('status',filter);
   const{data,error}=await q;
@@ -664,25 +672,38 @@ async function getSols(filter){
   return data||[];
 }
 function getDemoData(f){
-  const now=Date.now();
-  const d=[
-    {id:'d1',nombre:'Andrés García',email:'a.garcia@correo.uis.edu.co',codigo:'2022011200',programa:'Ing. Industrial',materia:'Diseño de Procesos',archivo:'engranaje_helical.stl',material:'PLA',deadline:'2025-02-15',gramos:87,horas:4.5,costo:10440,status:'printing',impresora:'Creality Hi #1',created_at:new Date(now-7200000).toISOString()},
-    {id:'d2',nombre:'Laura Pérez',email:'l.perez@correo.uis.edu.co',codigo:'2021035400',programa:'Diseño Industrial',materia:'Prototipado',archivo:'prototipo_brazo.stl',material:'PETG',deadline:'2025-02-10',gramos:62,horas:3,costo:7440,status:'ready',impresora:'Creality Hi #2',created_at:new Date(now-5400000).toISOString()},
-    {id:'d3',nombre:'Camilo Torres',email:'c.torres@correo.uis.edu.co',codigo:'2023078900',programa:'Mecatrónica',materia:'Robótica',archivo:'soporte_sensor.stl',material:'PLA',deadline:'2025-02-20',gramos:28,horas:1.5,costo:3360,status:'review',created_at:new Date(now-1800000).toISOString()},
-    {id:'d4',nombre:'María Ochoa',email:'m.ochoa@correo.uis.edu.co',codigo:'2020045500',programa:'Arquitectura',materia:'Maquetería Digital',archivo:'maqueta_edificio.stl',material:'PLA',deadline:'2025-02-25',gramos:145,horas:8,costo:17400,status:'pending',created_at:new Date(now-900000).toISOString()},
-  ];
-  return(!f||f==='todas')?d:d.filter(s=>s.status===f);
+  if(!_demoCache.length){
+    const now=Date.now();
+    _demoCache=[
+      {id:'d1',nombre:'Andrés García',email:'a.garcia@correo.uis.edu.co',codigo:'2022011200',programa:'Ing. Industrial',materia:'Diseño de Procesos',archivo:'engranaje_helical.stl',material:'PLA',deadline:'2025-02-15',gramos:87,horas:4.5,costo:10440,status:'printing',impresora:'Creality Hi #1',created_at:new Date(now-7200000).toISOString()},
+      {id:'d2',nombre:'Laura Pérez',email:'l.perez@correo.uis.edu.co',codigo:'2021035400',programa:'Diseño Industrial',materia:'Prototipado',archivo:'prototipo_brazo.stl',material:'PETG',deadline:'2025-02-10',gramos:62,horas:3,costo:7440,status:'ready',impresora:'Creality Hi #2',created_at:new Date(now-5400000).toISOString()},
+      {id:'d3',nombre:'Camilo Torres',email:'c.torres@correo.uis.edu.co',codigo:'2023078900',programa:'Mecatrónica',materia:'Robótica',archivo:'soporte_sensor.stl',material:'PLA',deadline:'2025-02-20',gramos:28,horas:1.5,costo:3360,status:'review',created_at:new Date(now-1800000).toISOString()},
+      {id:'d4',nombre:'María Ochoa',email:'m.ochoa@correo.uis.edu.co',codigo:'2020045500',programa:'Arquitectura',materia:'Maquetería Digital',archivo:'maqueta_edificio.stl',material:'PLA',deadline:'2025-02-25',gramos:145,horas:8,costo:17400,status:'pending',created_at:new Date(now-900000).toISOString()},
+    ];
+  }
+  return _demoCache;
 }
 async function dbIns(table,row){
-  if(CFG.demo)return{data:[{id:'demo'+Date.now(),...row}],error:null};
-  if(!SB)return{data:null,error:{message:'Sin conexión'}};
+  const newRow={id:'local-'+Date.now(),...row,created_at:new Date().toISOString()};
+  if(CFG.demo||!SB){
+    if(table==='solicitudes')demoSols.push(newRow);
+    return{data:[newRow],error:null};
+  }
   return await SB.from(table).insert(row).select();
 }
 async function dbUpd(table,id,upd){
-  if(CFG.demo)return{error:null};
-  if(!SB)return{error:{message:'Sin conexión'}};
+  // Actualizar en memoria también (demo o solicitudes locales)
+  if(table==='solicitudes'){
+    const idx=demoSols.findIndex(s=>s.id===id);
+    if(idx>=0){Object.assign(demoSols[idx],upd);}
+    // También actualizar datos demo en memoria
+    const di=_demoCache.findIndex(s=>s.id===id);
+    if(di>=0)Object.assign(_demoCache[di],upd);
+  }
+  if(CFG.demo||!SB)return{error:null};
   return await SB.from(table).update(upd).eq('id',id);
 }
+let _demoCache=[];
 
 // ── LOAD FUNCTIONS ──
 async function loadAll(){await Promise.all([loadStats(),loadDashRev(),loadDashNotifs()]);renderPrinters()}
@@ -908,7 +929,7 @@ async function envSol(){
   ['sn','se','sc2','sp2','sm2','sdoc','sob'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('sdl').value='';document.getElementById('sg').value='';document.getElementById('sh').value='';
   rmf({stopPropagation:()=>{}});
-  toast('Solicitud enviada','s','Recibirás un correo cuando sea revisada');
+  toast('Solicitud enviada','s', CFG.demo ? 'Modo demo: guardada en memoria (no persiste al recargar)' : 'Recibirás un correo cuando sea revisada');
   setTimeout(()=>{document.getElementById('bi').value=email;buscar();sS('estado',document.querySelectorAll('#sn .nt')[1])},700);
 }
 
