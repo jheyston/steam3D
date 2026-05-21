@@ -853,12 +853,12 @@ async function sendTelegram(id,tipo,customMsg=''){
   }
   console.log('Enviando Telegram a chatId:', chatId, 'tipo:', typeof chatId);
   const msgs={
-    inicio:`🖨 *¡Tu impresión comenzó!*\n\nHola ${s.nombre}, tu modelo *${s.archivo}* está imprimiéndose en *${s.impresora||'impresora asignada'}*\\.\n\nMaterial: ${s.material} · ${s.gramos||0}g\nCosto: $${(s.costo||0).toLocaleString('es-CO')} COP\n\n📍 _Sala STEAM · Salón 117 · UIS_`,
-    listo:`✅ *¡Tu impresión está lista\\!*\n\nHola ${s.nombre}, ya puedes recoger *${s.archivo}*\\.\n\n📍 *Salón 117* · Lun\\-Vie 8am\\-6pm\n💳 Trae tu carné UIS\n💰 Costo: *$${(s.costo||0).toLocaleString('es-CO')} COP*\n\n_Sala STEAM · UIS_`,
-    rechazado:`❌ *Solicitud rechazada*\n\nHola ${s.nombre}, tu solicitud de *${s.archivo}* no pudo procesarse\\.\n\nAcércate al Salón 117\\.\n\n_Sala STEAM · UIS_`,
-    turno:`⏰ *Tu turno se acerca*\n\nHola ${s.nombre}, en ~30 minutos comenzará tu impresión en el Salón 117\\.\n\n_Sala STEAM · UIS_`,
-    problema:`⚠️ *Problema con tu impresión*\n\nHola ${s.nombre}, hubo un inconveniente con *${s.archivo}*\\.\n\nAcércate al Salón 117\\.\n\n_Sala STEAM · UIS_`,
-    custom:`📬 *Sala STEAM · Salón 117 UIS*\n\nHola ${s.nombre},\n\n${customMsg}`
+    inicio:`🖨 Tu impresion comenzo!\n\nHola ${s.nombre}, tu modelo ${s.archivo} esta imprimiendose en ${s.impresora||'impresora asignada'}.\n\nMaterial: ${s.material} | ${s.gramos||0}g\nCosto: $${(s.costo||0).toLocaleString('es-CO')} COP\n\nTe avisamos cuando este lista.\n\nSala STEAM - Salon 117 - UIS`,
+    listo:`Tu impresion esta lista!\n\nHola ${s.nombre}, ya puedes recoger ${s.archivo}.\n\nPasa al Salon 117 con tu carne UIS\nHorario: Lun-Vie 8am-6pm\nCosto a pagar: $${(s.costo||0).toLocaleString('es-CO')} COP\n\nSala STEAM - Salon 117 - UIS`,
+    rechazado:`Solicitud rechazada\n\nHola ${s.nombre}, tu solicitud de ${s.archivo} no pudo procesarse.\n\nAcercate al Salon 117 para mas informacion.\n\nSala STEAM - UIS`,
+    turno:`Tu turno se acerca!\n\nHola ${s.nombre}, en aproximadamente 30 minutos comenzara tu impresion en el Salon 117.\n\nSala STEAM - UIS`,
+    problema:`Problema con tu impresion\n\nHola ${s.nombre}, hubo un inconveniente con ${s.archivo}.\n\nAcercate al Salon 117.\n\nSala STEAM - UIS`,
+    custom:`Sala STEAM - Salon 117 UIS\n\nHola ${s.nombre},\n\n${customMsg}`
   };
   const message=msgs[tipo]||msgs.custom;
   if(!CFG.demo&&SB)await SB.from('notificaciones').insert({solicitud_id:String(id),tipo,mensaje:message.substring(0,200)});
