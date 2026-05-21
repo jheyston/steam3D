@@ -554,8 +554,14 @@ select option{background:#fff;color:var(--text)}
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
 // ── STATE ──
-let CFG={sbUrl:'',sbKey:'',tgToken:'',adminPw:'',cam1:'',cam2:'',portalUrl:'https://steam3-d.vercel.app',pg:300,mg:5,demo:false};
+let CFG={sbUrl:'https://mjydxkajuyndjqlqqodv.supabase.co',sbKey:'sb_publishable_CltMSThxXlP8y-scab3sWA_zKpZBAw9',tgToken:'',adminPw:'',cam1:'',cam2:'',portalUrl:'https://steam3-d.vercel.app',pg:300,mg:5,demo:false};
 let SB=null,reviewId=null,selFile=null,curFilter='todas';
+// Inicializar Supabase inmediatamente con credenciales fijas
+function initSB(){
+  if(CFG.sbUrl&&CFG.sbKey&&window.supabase){
+    SB=window.supabase.createClient(CFG.sbUrl,CFG.sbKey);
+  }
+}
 let PRINTERS=[{id:1,name:'Creality Hi #1',status:'idle',job:null,pr:0},{id:2,name:'Creality Hi #2',status:'idle',job:null,pr:0}];
 let INV=[{c:'#e5e5e5',n:'PLA Blanco',s:840},{c:'#111',n:'PLA Negro',s:620},{c:'#6b7280',n:'PLA Gris',s:410},{c:'#ef4444',n:'PLA Rojo',s:210},{c:'#3b82f6',n:'PLA Azul',s:380},{c:'#f59e0b',n:'ABS Negro',s:150}];
 
@@ -580,8 +586,8 @@ function cM(id){document.getElementById(id).classList.remove('open')}
 
 // ── SETUP ──
 function saveConfig(){
-  const url=document.getElementById('cfg-sbu').value.trim();
-  const key=document.getElementById('cfg-sbk').value.trim();
+  const url=document.getElementById('cfg-sbu').value.trim()||CFG.sbUrl;
+  const key=document.getElementById('cfg-sbk').value.trim()||CFG.sbKey;
   const rk=document.getElementById('cfg-tgtoken').value.trim();
   const pw=document.getElementById('cfg-pw').value;
   const c1=document.getElementById('cfg-c1').value.trim();
@@ -1004,8 +1010,26 @@ async function envSol(){
   ['f-nombre','f-email','f-codigo','f-prog','f-materia','f-docente','f-obs','f-tgid'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('f-deadline').value='';document.getElementById('f-gramos').value='';document.getElementById('f-horas').value='';
   rmf({stopPropagation:()=>{}});
-  toast('Solicitud enviada','s', CFG.demo ? 'Modo demo: guardada en memoria (no persiste al recargar)' : 'Recibirás un correo cuando sea revisada');
-  setTimeout(()=>{document.getElementById('bi').value=email;buscar();sS('estado',document.querySelectorAll('#sn .nt')[1])},700);
+  toast('Solicitud enviada','s', CFG.demo ? 'Modo demo: guardada en memoria' : 'Recibirás un mensaje de Telegram cuando sea revisada');
+  // Mostrar la solicitud recién creada directamente sin hacer otra consulta
+  const newSol = data?.[0] || {
+    id:'nuevo-'+Date.now(), nombre, email, codigo, programa:prog, materia:mat,
+    archivo:selFile?.name||'archivo.stl', material, deadline:dl, gramos, horas,
+    costo:calcCosto(gramos), status:'review',
+    created_at:new Date().toISOString(), modalidad, telegram_id:tgid
+  };
+  sS('estado', document.querySelectorAll('#sn .nt')[1]);
+  document.getElementById('bi').value = email;
+  const el = document.getElementById('er');
+  el.innerHTML = rEstCard(newSol);
+  // Refrescar desde Supabase después de 2 segundos para confirmar
+  setTimeout(async ()=>{
+    const q = email.toLowerCase();
+    if(SB){
+      const{data:fresh}=await SB.from('solicitudes').select('*').or(`email.ilike.%${q}%,codigo.ilike.%${q}%`).order('created_at',{ascending:false});
+      if(fresh&&fresh.length) el.innerHTML=fresh.map(rEstCard).join('');
+    }
+  }, 2000);
 }
 
 // ── BUSCAR ESTADO ──
@@ -1127,8 +1151,8 @@ document.getElementById('login-pw')?.addEventListener('keydown', e=>{ if(e.key==
     try{
       const c=JSON.parse(saved);
       CFG={...CFG,...c};
-      document.getElementById('cfg-sbu').value=CFG.sbUrl||'';
-      document.getElementById('cfg-sbk').value=CFG.sbKey||'';
+      document.getElementById('cfg-sbu').value=CFG.sbUrl||'https://mjydxkajuyndjqlqqodv.supabase.co';
+      document.getElementById('cfg-sbk').value=CFG.sbKey||'sb_publishable_CltMSThxXlP8y-scab3sWA_zKpZBAw9';
       document.getElementById('cfg-tgtoken').value=CFG.tgToken||'';
       document.getElementById('cfg-pw').value=CFG.adminPw||'';
       document.getElementById('cfg-c1').value=CFG.cam1||'';
@@ -1146,7 +1170,10 @@ document.getElementById('login-pw')?.addEventListener('keydown', e=>{ if(e.key==
     document.getElementById('setup').style.display='none';
     document.getElementById('nav').style.display='flex';
     document.getElementById('mc').style.display='block';
-    CFG.demo=true;isAdminAuth=false;
+    // Conectar a Supabase con credenciales fijas — NO modo demo
+    CFG.demo=false;
+    isAdminAuth=false;
+    initSB();
     swV('student');
   }
 })();
