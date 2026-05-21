@@ -218,9 +218,9 @@ select option{background:#fff;color:var(--text)}
       <div class="sb-f"><label>Stream MJPEG — Creality Hi #2</label><input id="cfg-c2" placeholder="http://192.168.1.x:4408/webcam/?action=stream"><div class="sb-hint">Encuéntrala en la pantalla: Settings → Network → IP. Para acceso remoto usa ngrok.</div></div>
     </div>
 
-    <button class="sb-btn" onclick="saveConfig()"><i class="ti ti-rocket"></i> Guardar y entrar al sistema</button>
+    <button class="sb-btn" id="btn-save"><i class="ti ti-rocket"></i> Guardar y entrar al sistema</button>
     <div class="sb-st" id="sb-st"></div>
-    <div class="sb-skip" onclick="skipSetup()">Entrar en modo demo (sin base de datos)</div>
+    <div class="sb-skip" id="btn-skip">Entrar en modo demo (sin base de datos)</div>
   </div>
 </div>
 </div>
@@ -290,12 +290,12 @@ select option{background:#fff;color:var(--text)}
     </div>
     <div class="ff">
       <label>Contraseña de administrador</label>
-      <input type="password" id="login-pw" placeholder="Ingresa la contraseña" onkeydown="if(event.key==='Enter')doLogin()">
+      <input type="password" id="login-pw" placeholder="Ingresa la contraseña">
       <div style="font-size:11px;color:var(--danger);margin-top:5px;min-height:16px" id="login-err"></div>
     </div>
     <div style="display:flex;gap:8px;justify-content:flex-end">
       <button class="btn bts" onclick="cM('m-login')">Cancelar</button>
-      <button class="btn btp" onclick="doLogin()"><i class="ti ti-login"></i> Entrar</button>
+      <button class="btn btp" id="btn-login"><i class="ti ti-login"></i> Entrar</button>
     </div>
     <div style="margin-top:14px;padding:10px 12px;background:rgba(0,200,240,.06);border-radius:var(--r2);border-left:3px solid var(--accent);font-size:11px;color:var(--t2)">
       <i class="ti ti-info-circle"></i> La contraseña se configura en el panel de configuración inicial (ícono <i class="ti ti-settings"></i>).
@@ -328,7 +328,7 @@ select option{background:#fff;color:var(--text)}
   </div>
   <div class="ndiv"></div>
   <button class="n-set" onclick="document.getElementById('setup').style.display='flex'" title="Configuración"><i class="ti ti-settings"></i></button>
-  <button class="btn btd sm" id="logout-btn" onclick="logout()" style="display:none;padding:5px 10px;font-size:11px"><i class="ti ti-logout"></i> Salir</button>
+  <button class="btn btd sm" id="logout-btn" style="display:none;padding:5px 10px;font-size:11px"><i class="ti ti-logout"></i> Salir</button>
   <div class="db-pill" id="dbs">demo</div>
 </nav>
 
@@ -1084,6 +1084,12 @@ function apCam(n){
 }
 
 // ── BOOT ──
+document.getElementById('btn-save')?.addEventListener('click', saveConfig);
+document.getElementById('btn-skip')?.addEventListener('click', skipSetup);
+document.getElementById('btn-login')?.addEventListener('click', doLogin);
+document.getElementById('logout-btn')?.addEventListener('click', logout);
+document.getElementById('login-pw')?.addEventListener('keydown', e=>{ if(e.key==='Enter') doLogin(); });
+
 (function(){
   const saved=localStorage.getItem('s3d');
   const params=new URLSearchParams(window.location.search);
