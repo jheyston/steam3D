@@ -203,6 +203,10 @@ select option{background:var(--bg2)}
     <div class="sb-sec">
       <div class="sb-sec-t"><i class="ti ti-brand-telegram"></i> Telegram — Notificaciones gratis</div>
       <div class="sb-f"><label>Bot Token (de @BotFather)</label><input type="password" id="cfg-tgtoken" placeholder="7841234567:AAHxxxxxxxxxxxxxxxxxxxxxxxx"><div class="sb-hint">Abre @BotFather en Telegram → /newbot → copia el token</div></div>
+      <div style="margin-top:8px;padding:10px 12px;background:rgba(0,200,240,.06);border-radius:var(--r2);border-left:3px solid var(--accent);font-size:12px;color:var(--t2);line-height:1.7">
+        <strong style="color:var(--accent)">¿Cómo obtiene el Chat ID el estudiante?</strong><br>
+        El estudiante busca tu bot en Telegram y escribe <code style="font-family:var(--mono);background:var(--bg3);padding:1px 5px;border-radius:4px">/start</code> — el bot le responde automáticamente con su Chat ID. Solo necesita hacerlo una vez.
+      </div>
     </div>
 
     <div class="sb-sec">
@@ -487,7 +491,7 @@ select option{background:var(--bg2)}
       <label><i class="ti ti-brand-telegram" style="color:#2AABEE" aria-hidden="true"></i> Tu Chat ID de Telegram <span style="color:var(--t3);font-weight:400">(para recibir notificaciones)</span></label>
       <input id="f-tgid" placeholder="Ej: 123456789">
       <div style="font-size:11px;color:var(--t3);margin-top:4px;line-height:1.6">
-        Ábrele al bot <strong id="bot-name-hint">@steam3d_uis_bot</strong> en Telegram y escríbele <code style="font-family:var(--mono);background:var(--bg3);padding:1px 5px;border-radius:4px">/start</code> — él te responde con tu Chat ID.
+        Busca <strong id="bot-name-hint">@STEAM3D_UIS_BCA_bot</strong> en Telegram y escríbele <code style="font-family:var(--mono);background:var(--bg3);padding:1px 5px;border-radius:4px">/start</code> — el bot te responde con tu Chat ID. Si no tienes Telegram, déjalo vacío.
       </div>
     </div>
     <div style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Detalles de la impresión</div>
@@ -842,9 +846,12 @@ async function chSt(id,ns){
 async function sendTelegram(id,tipo,customMsg=''){
   const all=await getSols();
   const s=all.find(x=>x.id===id);
-  if(!s)return;
-  const chatId=s.telegram_id||'';
-  if(!chatId){toast('Sin Chat ID de Telegram','w',s.nombre+' no ingresó su Chat ID');return}
+  if(!s){toast('Solicitud no encontrada','e');return}
+  const chatId=String(s.telegram_id||'').trim();
+  if(!chatId||chatId==='null'||chatId==='undefined'){
+    toast('Sin Chat ID de Telegram','w',s.nombre+' · telegram_id vacío en Supabase');return;
+  }
+  console.log('Enviando Telegram a chatId:', chatId, 'tipo:', typeof chatId);
   const msgs={
     inicio:`🖨 <b>¡Tu impresión comenzó!</b>\n\nHola ${s.nombre}, tu modelo <b>${s.archivo}</b> está imprimiéndose en <b>${s.impresora||'la impresora asignada'}</b>.\n\nMaterial: ${s.material} · ${s.gramos||0}g\nCosto: $${(s.costo||0).toLocaleString('es-CO')} COP\n\nTe avisamos cuando esté lista 🎉\n\n📍 <i>Sala STEAM · Salón 117 · UIS</i>`,
     listo:`✅ <b>¡Tu impresión está lista!</b>\n\nHola ${s.nombre}, ya puedes recoger <b>${s.archivo}</b>.\n\n📍 <b>Salón 117</b> · Lun–Vie 8am–6pm\n💳 Trae tu carné UIS\n💰 Costo: <b>$${(s.costo||0).toLocaleString('es-CO')} COP</b>\n\n<i>Sala STEAM · UIS</i>`,
@@ -863,8 +870,12 @@ async function sendTelegram(id,tipo,customMsg=''){
     });
     if(!r.ok){const txt=await r.text();toast('Error serverless','e',r.status+' · '+txt.substring(0,100));return}
     const d=await r.json();
-    if(d.success){toast('Telegram enviado a '+s.nombre,'s','Chat: '+chatId)}
-    else{toast('Error Telegram','e',d.error||JSON.stringify(d).substring(0,100))}
+    console.log('Respuesta Telegram:', d);
+    if(d.success||d.telegramResponse?.ok){
+      toast('Telegram enviado a '+s.nombre,'s','Chat ID: '+chatId);
+    } else {
+      toast('Error Telegram','e',d.error||d.telegramResponse?.description||JSON.stringify(d).substring(0,120));
+    }
   }catch(err){toast('No se encontró /api/send-telegram','e',err.message)}
 }
 
