@@ -516,8 +516,8 @@ select option{background:#fff;color:var(--text)}
     <div class="ff"><label>Descripción / Observaciones</label><textarea id="f-obs" rows="2" placeholder="Porcentaje de relleno, escala, propósito del modelo..."></textarea></div>
     <div style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Archivo STL *</div>
     <div class="dz" id="dz" onclick="document.getElementById('fi2').click()" ondragover="dov(event)" ondragleave="dlv()" ondrop="ddf(event)">
-      <input type="file" id="fi2" accept=".stl,.obj,.3mf" style="display:none" onchange="hf(this.files[0])">
-      <div id="dc"><i class="ti ti-upload" style="font-size:36px;color:var(--t3);display:block;margin-bottom:10px"></i><div style="font-size:14px;font-weight:600;color:var(--t2)">Arrastra tu archivo STL aquí</div><div style="font-size:12px;color:var(--t3);margin-top:4px">o haz clic para seleccionar · .stl .obj .3mf</div></div>
+      <input type="file" id="fi2" style="display:none" onchange="hf(this.files[0])">
+      <div id="dc"><i class="ti ti-upload" style="font-size:36px;color:var(--t3);display:block;margin-bottom:10px"></i><div style="font-size:14px;font-weight:600;color:var(--t2)">Toca aquí para seleccionar tu archivo</div><div style="font-size:12px;color:var(--t3);margin-top:4px">Formatos aceptados: .stl .obj .3mf</div><div style="font-size:11px;color:var(--t3);margin-top:4px">Desde celular: busca el archivo en tu almacenamiento o Google Drive</div></div>
       <div id="dp2" style="display:none"><i class="ti ti-file-3d" style="font-size:36px;color:var(--a3);display:block;margin-bottom:10px"></i><div style="font-size:14px;font-weight:700;color:var(--a3)" id="fn2">archivo.stl</div><div style="font-size:12px;color:var(--t3);margin-top:4px" id="fsz2"></div><button class="btn btd sm" style="margin-top:12px" onclick="rmf(event)"><i class="ti ti-x"></i> Quitar</button></div>
     </div>
     <div style="margin-top:14px;padding:12px 14px;background:rgba(0,200,240,.06);border-radius:var(--r2);border-left:3px solid var(--accent);font-size:13px;color:var(--t2)">
@@ -967,7 +967,11 @@ function dlv(){document.getElementById('dz').classList.remove('drag')}
 function ddf(e){e.preventDefault();dlv();if(e.dataTransfer.files[0])hf(e.dataTransfer.files[0])}
 function hf(file){
   if(!file)return;
-  if(!['stl','obj','3mf'].includes(file.name.split('.').pop().toLowerCase())){toast('Solo .stl, .obj o .3mf','e');return}
+  const ext=file.name.split('.').pop().toLowerCase();
+  const valid=['stl','obj','3mf'];
+  if(!valid.includes(ext)){
+    if(!confirm('El archivo "'+file.name+'" no parece ser .stl, .obj o .3mf.\n\n¿Deseas subirlo de todas formas?')){return;}
+  }
   selFile=file;
   document.getElementById('dc').style.display='none';document.getElementById('dp2').style.display='block';
   document.getElementById('fn2').textContent=file.name;
@@ -1008,11 +1012,19 @@ async function envSol(){
 async function buscar(){
   const q=document.getElementById('bi').value.trim().toLowerCase();
   if(!q)return;
-  const all=await getSols();
-  const found=all.filter(s=>s.email?.toLowerCase().includes(q)||s.codigo?.toLowerCase().includes(q));
   const el=document.getElementById('er');
-  if(!found.length){el.innerHTML=`<div class="card" style="text-align:center;padding:32px"><i class="ti ti-mood-sad" style="font-size:40px;color:var(--t3);display:block;margin-bottom:12px"></i><div style="color:var(--t3)">Sin resultados para "<strong>${q}</strong>"</div></div>`;return}
-  el.innerHTML=found.map(rEstCard).join('');
+  el.innerHTML='<div style="text-align:center;padding:20px;color:var(--t3)"><span class="spin"></span> Buscando...</div>';
+  let all=[];
+  if(SB){
+    // Buscar directamente en Supabase por email o codigo
+    const{data,error}=await SB.from('solicitudes').select('*').or(`email.ilike.%${q}%,codigo.ilike.%${q}%`).order('created_at',{ascending:false});
+    if(!error)all=data||[];
+  } else {
+    all=await getSols();
+    all=all.filter(s=>s.email?.toLowerCase().includes(q)||s.codigo?.toLowerCase().includes(q));
+  }
+  if(!all.length){el.innerHTML=`<div class="card" style="text-align:center;padding:32px"><i class="ti ti-mood-sad" style="font-size:40px;color:var(--t3);display:block;margin-bottom:12px"></i><div style="color:var(--t3)">Sin resultados para "<strong>${q}</strong>"<br><span style="font-size:12px">Verifica tu correo o código de estudiante</span></div></div>`;return}
+  el.innerHTML=all.map(rEstCard).join('');
 }
 function rEstCard(s){
   const lbl={review:'En revisión',pending:'En cola',printing:'Imprimiendo',ready:'¡Lista para recoger!',done:'Entregada',cancelled:'Cancelada'};
@@ -1039,11 +1051,20 @@ function rEstCard(s){
 
 // ── COLA PÚBLICA ──
 async function loadPubQ(){
-  const sols=await getSols();
-  const cola=sols.filter(s=>['pending','printing'].includes(s.status)).sort((a,b)=>new Date(a.created_at)-new Date(b.created_at));
+  // La cola publica siempre lee de Supabase real, nunca datos demo
+  let sols=[];
+  if(SB){
+    const{data,error}=await SB.from('solicitudes').select('id,nombre,archivo,material,deadline,status,created_at').in('status',['pending','printing']).order('created_at',{ascending:true});
+    if(!error)sols=data||[];
+  } else if(CFG.demo){
+    // En demo puro mostrar datos de memoria local (demoSols)
+    sols=[...demoSols].filter(s=>['pending','printing'].includes(s.status));
+  }
+  const cola=sols.sort((a,b)=>new Date(a.created_at)-new Date(b.created_at));
   const pp=document.getElementById('pup');
   if(pp)pp.innerHTML=PRINTERS.map(p=>`<div class="pc ${p.status}"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px"><div style="font-size:15px;font-weight:700"><i class="ti ti-printer" style="color:var(--accent)"></i> ${p.name}</div><span style="font-size:12px"><span class="dot d${p.status[0]}"></span>${{idle:'Disponible',printing:'Imprimiendo',error:'Error'}[p.status]}</span></div>${p.status==='printing'?`<div style="font-size:11px;font-family:var(--mono);color:var(--t3);margin-bottom:5px">${p.job||'—'}</div><div class="pw"><div class="pb" style="width:${p.pr}%;background:var(--accent)"></div></div><div style="font-size:11px;color:var(--accent);font-family:var(--mono);margin-top:4px">${p.pr}% completado</div>`:p.status==='idle'?`<div style="font-size:12px;color:var(--a3)"><i class="ti ti-check"></i> Lista para imprimir</div>`:`<div style="font-size:12px;color:var(--danger)"><i class="ti ti-alert-triangle"></i> En mantenimiento</div>`}</div>`).join('');
   const pql=document.getElementById('pql');
+  if(!pql)return;
   if(!cola.length){pql.innerHTML='<div style="text-align:center;padding:30px;color:var(--t3)">Cola vacía · ¡Sé el primero en solicitar!</div>';return}
   pql.innerHTML=cola.map((s,i)=>`<div class="pi ${i===0&&s.status==='pending'?'top':s.status==='printing'?'pnow':''}"><div class="qp ${i===0?'q1':i===1?'q2':'qn'}">${s.status==='printing'?'<i class="ti ti-printer"></i>':'#'+(i+1)}</div><div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600">${s.nombre}</div><div style="font-size:11px;color:var(--t3);font-family:var(--mono);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s.archivo||'—'} · ${s.material||''}</div></div><div style="text-align:right;flex-shrink:0"><div style="font-size:10px;color:var(--t3)">Fecha límite</div><div style="font-size:12px;font-weight:600;color:var(--warn)">${s.deadline||'—'}</div></div></div>`).join('');
 }
