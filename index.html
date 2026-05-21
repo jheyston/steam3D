@@ -311,11 +311,11 @@ select option{background:#fff;color:var(--text)}
     <div class="nb-ic"><i class="ti ti-3d-cube-sphere"></i></div>
     <div><div class="nb-t">STEAM <span>3D</span></div><div class="nb-s">Salón 117 · UIS</div></div>
   </div>
-  <div class="vsw">
+  <div class="vsw" id="vsw">
     <button class="vb aa" id="vba" onclick="reqAdmin()"><i class="ti ti-shield"></i> Admin</button>
     <button class="vb" id="vbs" onclick="swV('student')"><i class="ti ti-user"></i> Estudiante</button>
   </div>
-  <div class="ndiv"></div>
+  <div class="ndiv" id="ndiv-vsw"></div>
   <div id="an" style="display:flex;gap:3px;flex-wrap:wrap">
     <button class="nt active" onclick="sP('dash',this)"><i class="ti ti-layout-dashboard"></i> Dashboard</button>
     <button class="nt" onclick="sP('cola',this)"><i class="ti ti-list-numbers"></i> Cola <span class="nbg" id="bc">0</span></button>
@@ -328,8 +328,8 @@ select option{background:#fff;color:var(--text)}
     <button class="nt" onclick="sS('estado',this)"><i class="ti ti-clock"></i> Mi estado</button>
     <button class="nt" onclick="sS('cpub',this)"><i class="ti ti-list-numbers"></i> Cola pública</button>
   </div>
-  <div class="ndiv"></div>
-  <button class="n-set" onclick="document.getElementById('setup').style.display='flex'" title="Configuración"><i class="ti ti-settings"></i></button>
+  <div class="ndiv" id="ndiv-right"></div>
+  <button class="n-set" id="btn-settings" onclick="document.getElementById('setup').style.display='flex'" title="Configuración"><i class="ti ti-settings"></i></button>
   <button class="btn btd sm" id="logout-btn" style="display:none;padding:5px 10px;font-size:11px"><i class="ti ti-logout"></i> Salir</button>
   <div class="db-pill" id="dbs">demo</div>
 </nav>
@@ -652,13 +652,18 @@ function logout(){
 // ── NAVIGATION ──
 function swV(v){
   const isA=v==='admin';
-  // Si intenta ir a admin sin auth, pedir login
   if(isA&&!isAdminAuth&&CFG.adminPw&&!CFG.demo){reqAdmin();return}
   document.getElementById('an').style.display=isA?'flex':'none';
   document.getElementById('sn').style.display=isA?'none':'flex';
   document.getElementById('vba').className='vb'+(isA?' aa':'');
   document.getElementById('vbs').className='vb'+(!isA?' as':'');
-  // Mostrar/ocultar botón de cerrar sesión
+  // Ocultar switcher, settings y pill si es portal público de estudiante
+  const pub=window._publicStudent&&!isA;
+  document.getElementById('vsw').style.display=pub?'none':'flex';
+  document.getElementById('ndiv-vsw').style.display=pub?'none':'block';
+  document.getElementById('ndiv-right').style.display=pub?'none':'block';
+  document.getElementById('btn-settings').style.display=pub?'none':'flex';
+  document.getElementById('dbs').style.display=pub?'none':'block';
   const lob=document.getElementById('logout-btn');
   if(lob)lob.style.display=isA?'flex':'none';
   document.querySelectorAll('.page').forEach(p=>{p.classList.remove('active');p.style.display='none'});
@@ -1095,6 +1100,8 @@ document.getElementById('login-pw')?.addEventListener('keydown', e=>{ if(e.key==
   const saved=localStorage.getItem('s3d');
   const params=new URLSearchParams(window.location.search);
   const forceStudent=params.get('view')==='student';
+  // Marcar como portal público si viene del QR
+  if(forceStudent) window._publicStudent=true;
   if(saved){
     try{
       const c=JSON.parse(saved);
@@ -1113,17 +1120,13 @@ document.getElementById('login-pw')?.addEventListener('keydown', e=>{ if(e.key==
       return;
     }catch(e){console.error(e)}
   }
-  if(forceStudent||true){
-    if(forceStudent){
-      document.getElementById('setup').style.display='none';
-      document.getElementById('nav').style.display='flex';
-      document.getElementById('mc').style.display='block';
-      CFG.demo=true;isAdminAuth=false;
-      swV('student');
-      document.getElementById('dbs').textContent='portal';
-      document.getElementById('dbs').style.color='var(--a3)';
-      document.getElementById('dbs').style.borderColor='rgba(16,185,129,.3)';
-    }
+  if(forceStudent){
+    window._publicStudent=true;
+    document.getElementById('setup').style.display='none';
+    document.getElementById('nav').style.display='flex';
+    document.getElementById('mc').style.display='block';
+    CFG.demo=true;isAdminAuth=false;
+    swV('student');
   }
 })();
 </script>
