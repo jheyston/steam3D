@@ -1,56 +1,57 @@
-export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  if (req.method === 'OPTIONS') return res.status(200).end();
+export const config = {
+  runtime: 'edge'
+};
 
-  // Log everything to diagnose
-  console.log('Method:', req.method);
-  console.log('Body keys:', Object.keys(req.body || {}));
-  console.log('Body:', JSON.stringify(req.body));
+export default async function handler(req) {
+  const headers = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Content-Type': 'application/json'
+  };
 
-  const body = req.body || {};
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { status: 200, headers });
+  }
 
-  // WEBHOOK from Telegram (has body.message)
+  let body;
+  try {
+    body = await req.json();
+  } catch(e) {
+    return new Response(JSON.stringify({ error: 'Invalid JSON' }), { status: 400, headers });
+  }
+
+  // WEBHOOK from Telegram
   if (body.message) {
     const chatId = body.message?.chat?.id;
     const text = body.message?.text || '';
     const nombre = body.message?.chat?.first_name || 'estudiante';
-    console.log('Webhook message from chatId:', chatId, 'text:', text);
 
     if (text === '/start' && chatId) {
       const botToken = process.env.TELEGRAM_BOT_TOKEN;
       if (botToken) {
-        const reply = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+        await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             chat_id: chatId,
-            text: `Hola ${nombre}!\n\nBienvenido al bot de la Sala STEAM Salon 117 UIS.\n\nTu Chat ID es: ${chatId}\n\nCopialo y pegalo en el formulario de solicitud de impresion.`
+            text: `Hola ${nombre}!\n\nBienvenido al bot Sala STEAM Salon 117 UIS.\n\nTu Chat ID es: ${chatId}\n\nCopialo y pegalo en el formulario de solicitud.`
           })
         });
-        const replyData = await reply.json();
-        console.log('Start reply:', JSON.stringify(replyData));
       }
     }
-    return res.status(200).json({ ok: true });
+    return new Response(JSON.stringify({ ok: true }), { status: 200, headers });
   }
 
-  // SEND NOTIFICATION from the app (has chatId, message, botToken)
+  // SEND NOTIFICATION from app
   const { chatId, message, botToken } = body;
 
-  console.log('Notification request - chatId:', chatId, 'hasMessage:', !!message, 'hasToken:', !!botToken);
-
   if (!chatId || !message || !botToken) {
-    console.log('Missing fields');
-    return res.status(400).json({ error: 'Faltan campos: chatId=' + chatId + ' message=' + !!message + ' botToken=' + !!botToken });
+    return new Response(JSON.stringify({ error: 'Faltan: chatId, message, botToken' }), { status: 400, headers });
   }
 
   try {
-    const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
-    console.log('Calling Telegram API...');
-
-    const r = await fetch(url, {
+    const r = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -60,15 +61,13 @@ export default async function handler(req, res) {
     });
 
     const data = await r.json();
-    console.log('Telegram response:', JSON.stringify(data));
 
     if (!data.ok) {
-      return res.status(400).json({ error: data.description, detail: data });
+      return new Response(JSON.stringify({ error: data.description, detail: data }), { status: 400, headers });
     }
 
-    return res.status(200).json({ success: true, messageId: data.result.message_id });
+    return new Response(JSON.stringify({ success: true, messageId: data.result.message_id }), { status: 200, headers });
   } catch (err) {
-    console.log('Fetch error:', err.message);
-    return res.status(500).json({ error: err.message });
+    return new Response(JSON.stringify({ error: err.message }), { status: 500, headers });
   }
 }
