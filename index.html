@@ -853,12 +853,12 @@ async function sendTelegram(id,tipo,customMsg=''){
   }
   console.log('Enviando Telegram a chatId:', chatId, 'tipo:', typeof chatId);
   const msgs={
-    inicio:`🖨 <b>¡Tu impresión comenzó!</b>\n\nHola ${s.nombre}, tu modelo <b>${s.archivo}</b> está imprimiéndose en <b>${s.impresora||'la impresora asignada'}</b>.\n\nMaterial: ${s.material} · ${s.gramos||0}g\nCosto: $${(s.costo||0).toLocaleString('es-CO')} COP\n\nTe avisamos cuando esté lista 🎉\n\n📍 <i>Sala STEAM · Salón 117 · UIS</i>`,
-    listo:`✅ <b>¡Tu impresión está lista!</b>\n\nHola ${s.nombre}, ya puedes recoger <b>${s.archivo}</b>.\n\n📍 <b>Salón 117</b> · Lun–Vie 8am–6pm\n💳 Trae tu carné UIS\n💰 Costo: <b>$${(s.costo||0).toLocaleString('es-CO')} COP</b>\n\n<i>Sala STEAM · UIS</i>`,
-    rechazado:`❌ <b>Solicitud rechazada</b>\n\nHola ${s.nombre}, tu solicitud de <b>${s.archivo}</b> no pudo procesarse.\n\nAcércate al Salón 117 para más info.\n\n<i>Sala STEAM · UIS</i>`,
-    turno:`⏰ <b>Tu turno se acerca</b>\n\nHola ${s.nombre}, en ~30 minutos comenzará tu impresión en el Salón 117.\n\n<i>Sala STEAM · UIS</i>`,
-    problema:`⚠️ <b>Problema con tu impresión</b>\n\nHola ${s.nombre}, hubo un inconveniente con <b>${s.archivo}</b>.\n\nAcércate al Salón 117.\n\n<i>Sala STEAM · UIS</i>`,
-    custom:`📬 <b>Sala STEAM · Salón 117 UIS</b>\n\nHola ${s.nombre},\n\n${customMsg}`
+    inicio:`🖨 *¡Tu impresión comenzó!*\n\nHola ${s.nombre}, tu modelo *${s.archivo}* está imprimiéndose en *${s.impresora||'impresora asignada'}*\\.\n\nMaterial: ${s.material} · ${s.gramos||0}g\nCosto: $${(s.costo||0).toLocaleString('es-CO')} COP\n\n📍 _Sala STEAM · Salón 117 · UIS_`,
+    listo:`✅ *¡Tu impresión está lista\\!*\n\nHola ${s.nombre}, ya puedes recoger *${s.archivo}*\\.\n\n📍 *Salón 117* · Lun\\-Vie 8am\\-6pm\n💳 Trae tu carné UIS\n💰 Costo: *$${(s.costo||0).toLocaleString('es-CO')} COP*\n\n_Sala STEAM · UIS_`,
+    rechazado:`❌ *Solicitud rechazada*\n\nHola ${s.nombre}, tu solicitud de *${s.archivo}* no pudo procesarse\\.\n\nAcércate al Salón 117\\.\n\n_Sala STEAM · UIS_`,
+    turno:`⏰ *Tu turno se acerca*\n\nHola ${s.nombre}, en ~30 minutos comenzará tu impresión en el Salón 117\\.\n\n_Sala STEAM · UIS_`,
+    problema:`⚠️ *Problema con tu impresión*\n\nHola ${s.nombre}, hubo un inconveniente con *${s.archivo}*\\.\n\nAcércate al Salón 117\\.\n\n_Sala STEAM · UIS_`,
+    custom:`📬 *Sala STEAM · Salón 117 UIS*\n\nHola ${s.nombre},\n\n${customMsg}`
   };
   const message=msgs[tipo]||msgs.custom;
   if(!CFG.demo&&SB)await SB.from('notificaciones').insert({solicitud_id:String(id),tipo,mensaje:message.substring(0,200)});
