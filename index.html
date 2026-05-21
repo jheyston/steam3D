@@ -6,8 +6,6 @@
 <title>STEAM 3D · Salón 117 · UIS</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js" onload="if(window._qrPending){genQR();window._qrPending=false}"></script>
 <style>
 :root{
   --bg:#f5f7f5;--bg2:#ffffff;--bg3:#f0f4ef;--bg4:#e8ede7;
@@ -551,6 +549,8 @@ select option{background:#fff;color:var(--text)}
 
 </div><!-- /main -->
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js" onload="if(window._qrPending){genQR();window._qrPending=false}"></script>
 <script>
 // ── STATE ──
 let CFG={sbUrl:'',sbKey:'',tgToken:'',adminPw:'',cam1:'',cam2:'',pg:300,mg:5,demo:false};
@@ -1079,3 +1079,45 @@ function apCam(n){
   img.src=url;img.alt='Creality Hi #'+n;img.style.cssText='width:100%;height:100%;object-fit:cover';
   img.onerror=()=>{ov.innerHTML=`<i class="ti ti-wifi-off" style="font-size:30px"></i><div style="font-size:12px;margin-top:8px">No se puede conectar</div><div style="font-size:11px;color:var(--t3);margin-top:4px">${url}</div>`;ov.style.display='flex'};
   wrap.appendChild(img);
+  CFG['cam'+n]=url;localStorage.setItem('s3d',JSON.stringify(CFG));
+  toast('Cámara #'+n+' conectada','s');
+}
+
+// ── BOOT ──
+(function(){
+  const saved=localStorage.getItem('s3d');
+  const params=new URLSearchParams(window.location.search);
+  const forceStudent=params.get('view')==='student';
+  if(saved){
+    try{
+      const c=JSON.parse(saved);
+      CFG={...CFG,...c};
+      document.getElementById('cfg-sbu').value=CFG.sbUrl||'';
+      document.getElementById('cfg-sbk').value=CFG.sbKey||'';
+      document.getElementById('cfg-tgtoken').value=CFG.tgToken||'';
+      document.getElementById('cfg-pw').value=CFG.adminPw||'';
+      document.getElementById('cfg-c1').value=CFG.cam1||'';
+      document.getElementById('cfg-c2').value=CFG.cam2||'';
+      if(CFG.sbUrl&&CFG.sbKey)initSB();
+      launch();
+      isAdminAuth=false;
+      swV('student');
+      return;
+    }catch(e){console.error(e)}
+  }
+  if(forceStudent||true){
+    if(forceStudent){
+      document.getElementById('setup').style.display='none';
+      document.getElementById('nav').style.display='flex';
+      document.getElementById('mc').style.display='block';
+      CFG.demo=true;isAdminAuth=false;
+      swV('student');
+      document.getElementById('dbs').textContent='portal';
+      document.getElementById('dbs').style.color='var(--a3)';
+      document.getElementById('dbs').style.borderColor='rgba(16,185,129,.3)';
+    }
+  }
+})();
+</script>
+</body>
+</html>
