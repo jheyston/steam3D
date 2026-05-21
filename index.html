@@ -208,7 +208,9 @@ select option{background:#fff;color:var(--text)}
     </div>
 
     <div class="sb-sec">
-      <div class="sb-sec-t"><i class="ti ti-lock"></i> Seguridad Admin</div>
+      <div class="sb-sec-t"><i class="ti ti-link"></i> URL del portal (para el QR)</div>
+      <div class="sb-f"><label>URL pública en Vercel</label><input id="cfg-url" placeholder="https://steam3-d.vercel.app"><div class="sb-hint">Esta URL aparece en el QR. Cámbiala si renombras el proyecto en Vercel.</div></div>
+    </div>
       <div class="sb-f"><label>Contraseña del panel administrador</label><input type="password" id="cfg-pw" placeholder="Mínimo 6 caracteres"></div>
     </div>
 
@@ -552,7 +554,7 @@ select option{background:#fff;color:var(--text)}
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
 // ── STATE ──
-let CFG={sbUrl:'',sbKey:'',tgToken:'',adminPw:'',cam1:'',cam2:'',pg:300,mg:5,demo:false};
+let CFG={sbUrl:'',sbKey:'',tgToken:'',adminPw:'',cam1:'',cam2:'',portalUrl:'https://steam3-d.vercel.app',pg:300,mg:5,demo:false};
 let SB=null,reviewId=null,selFile=null,curFilter='todas';
 let PRINTERS=[{id:1,name:'Creality Hi #1',status:'idle',job:null,pr:0},{id:2,name:'Creality Hi #2',status:'idle',job:null,pr:0}];
 let INV=[{c:'#e5e5e5',n:'PLA Blanco',s:840},{c:'#111',n:'PLA Negro',s:620},{c:'#6b7280',n:'PLA Gris',s:410},{c:'#ef4444',n:'PLA Rojo',s:210},{c:'#3b82f6',n:'PLA Azul',s:380},{c:'#f59e0b',n:'ABS Negro',s:150}];
@@ -581,15 +583,15 @@ function saveConfig(){
   const url=document.getElementById('cfg-sbu').value.trim();
   const key=document.getElementById('cfg-sbk').value.trim();
   const rk=document.getElementById('cfg-tgtoken').value.trim();
-  const from='';
   const pw=document.getElementById('cfg-pw').value;
   const c1=document.getElementById('cfg-c1').value.trim();
   const c2=document.getElementById('cfg-c2').value.trim();
+  const portalUrl=document.getElementById('cfg-url').value.trim()||'https://steam3-d.vercel.app';
   const st=document.getElementById('sb-st');
   if(!url||!key){st.textContent='Supabase URL y Key son obligatorios';st.className='sb-st err';return}
   if(!pw||pw.length<6){st.textContent='Contraseña mínimo 6 caracteres';st.className='sb-st err';return}
   st.textContent='Conectando...';st.className='sb-st';
-  CFG={sbUrl:url,sbKey:key,tgToken:rk,adminPw:pw,cam1:c1,cam2:c2,pg:300,mg:5,demo:false};
+  CFG={sbUrl:url,sbKey:key,tgToken:rk,adminPw:pw,cam1:c1,cam2:c2,portalUrl,pg:300,mg:5,demo:false};
   localStorage.setItem('s3d',JSON.stringify(CFG));
   initSB();
   SB.from('solicitudes').select('id').limit(1).then(({error})=>{
@@ -1058,16 +1060,11 @@ function aInv(i,d){INV[i].s=Math.max(0,INV[i].s+d);renderInv();toast(d>0?`+1kg $
 
 // ── QR ──
 function genQR(){
-  const url=window.location.href.split('?')[0]+'?view=student';
+  const url=(CFG.portalUrl||'https://steam3-d.vercel.app')+'/?view=student';
   const elUrl=document.getElementById('qru');if(elUrl)elUrl.textContent=url;
   const img=document.getElementById('qrc');if(!img)return;
-  // Usar Google Charts API — funciona siempre sin librerías
-  const encoded=encodeURIComponent(url);
-  img.src='https://chart.googleapis.com/chart?cht=qr&chs=180x180&chl='+encoded+'&choe=UTF-8&chld=M|2';
-  img.onerror=function(){
-    // Fallback: QR code generator alternativo
-    img.src='https://api.qrserver.com/v1/create-qr-code/?size=180x180&data='+encoded;
-  };
+  img.src='https://api.qrserver.com/v1/create-qr-code/?size=180x180&data='+encodeURIComponent(url)+'&margin=10&color=000000&bgcolor=ffffff';
+  img.alt='QR Sala STEAM Salon 117 UIS';
 }
 function copyQR(){navigator.clipboard.writeText(document.getElementById('qru')?.textContent||'').then(()=>toast('URL copiada','s'))}
 
@@ -1108,6 +1105,7 @@ document.getElementById('login-pw')?.addEventListener('keydown', e=>{ if(e.key==
       document.getElementById('cfg-pw').value=CFG.adminPw||'';
       document.getElementById('cfg-c1').value=CFG.cam1||'';
       document.getElementById('cfg-c2').value=CFG.cam2||'';
+      document.getElementById('cfg-url').value=CFG.portalUrl||'https://steam3-d.vercel.app';
       if(CFG.sbUrl&&CFG.sbKey)initSB();
       launch();
       isAdminAuth=false;
