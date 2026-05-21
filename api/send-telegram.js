@@ -1,6 +1,4 @@
-export const config = {
-  runtime: 'edge'
-};
+export const config = { runtime: 'edge' };
 
 export default async function handler(req) {
   const headers = {
@@ -10,64 +8,34 @@ export default async function handler(req) {
     'Content-Type': 'application/json'
   };
 
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { status: 200, headers });
-  }
+  if (req.method === 'OPTIONS') return new Response('ok', { status: 200, headers });
+  if (req.method !== 'POST') return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405, headers });
 
-  let body;
+  let chatId, message, botToken;
   try {
-    body = await req.json();
+    const body = await req.json();
+    chatId = body.chatId;
+    message = body.message;
+    botToken = body.botToken;
   } catch(e) {
-    return new Response(JSON.stringify({ error: 'Invalid JSON' }), { status: 400, headers });
+    return new Response(JSON.stringify({ error: 'JSON invalido: ' + e.message }), { status: 400, headers });
   }
-
-  // WEBHOOK from Telegram
-  if (body.message) {
-    const chatId = body.message?.chat?.id;
-    const text = body.message?.text || '';
-    const nombre = body.message?.chat?.first_name || 'estudiante';
-
-    if (text === '/start' && chatId) {
-      const botToken = process.env.TELEGRAM_BOT_TOKEN;
-      if (botToken) {
-        await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            chat_id: chatId,
-            text: `Hola ${nombre}!\n\nBienvenido al bot Sala STEAM Salon 117 UIS.\n\nTu Chat ID es: ${chatId}\n\nCopialo y pegalo en el formulario de solicitud.`
-          })
-        });
-      }
-    }
-    return new Response(JSON.stringify({ ok: true }), { status: 200, headers });
-  }
-
-  // SEND NOTIFICATION from app
-  const { chatId, message, botToken } = body;
 
   if (!chatId || !message || !botToken) {
-    return new Response(JSON.stringify({ error: 'Faltan: chatId, message, botToken' }), { status: 400, headers });
+    return new Response(JSON.stringify({ error: 'Faltan campos', chatId: !!chatId, message: !!message, botToken: !!botToken }), { status: 400, headers });
   }
 
-  try {
-    const r = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        chat_id: String(chatId).trim(),
-        text: String(message)
-      })
-    });
+  const r = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ chat_id: String(chatId).trim(), text: String(message) })
+  });
 
-    const data = await r.json();
+  const data = await r.json();
 
-    if (!data.ok) {
-      return new Response(JSON.stringify({ error: data.description, detail: data }), { status: 400, headers });
-    }
-
-    return new Response(JSON.stringify({ success: true, messageId: data.result.message_id }), { status: 200, headers });
-  } catch (err) {
-    return new Response(JSON.stringify({ error: err.message }), { status: 500, headers });
+  if (!data.ok) {
+    return new Response(JSON.stringify({ error: data.description, code: data.error_code }), { status: 400, headers });
   }
+
+  return new Response(JSON.stringify({ success: true, messageId: data.result.message_id }), { status: 200, headers });
 }
