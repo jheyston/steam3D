@@ -23,8 +23,8 @@ export default async function handler(req, res) {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             chat_id: chatId,
-            parse_mode: 'HTML',
-            text: `👋 Hola <b>${nombre}</b>!\n\nBienvenido al bot de la <b>Sala STEAM · Salón 117 · UIS</b>.\n\n✅ Tu <b>Chat ID</b> es:\n\n<code>${chatId}</code>\n\n📋 Cópialo y pégalo en el campo <b>"Chat ID de Telegram"</b> del formulario de solicitud.\n\n📍 <i>Universidad Industrial de Santander</i>`
+            parse_mode: 'MarkdownV2',
+            text: `👋 Hola *${nombre}*\\!\n\nBienvenido al bot de la *Sala STEAM · Salón 117 · UIS*\\.\n\n✅ Tu *Chat ID* es:\n\n\`${chatId}\`\n\n📋 Cópialo y pégalo en el campo *"Chat ID de Telegram"* del formulario de solicitud\\.\n\n📍 _Universidad Industrial de Santander_`
           })
         });
       }
@@ -44,11 +44,12 @@ export default async function handler(req, res) {
     const r = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chat_id: chatId, text: message, parse_mode: 'HTML' })
+      body: JSON.stringify({ chat_id: String(chatId).trim(), text: message, parse_mode: 'MarkdownV2' })
     });
     const data = await r.json();
+    console.log('Telegram response:', JSON.stringify(data));
     if (!data.ok) return res.status(400).json({ error: data.description, detail: data });
-    return res.status(200).json({ success: true, messageId: data.result.message_id });
+    return res.status(200).json({ success: true, messageId: data.result?.message_id, telegramResponse: data });
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }
