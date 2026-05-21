@@ -4,53 +4,71 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.status(200).end();
 
+  // Log everything to diagnose
+  console.log('Method:', req.method);
+  console.log('Body keys:', Object.keys(req.body || {}));
+  console.log('Body:', JSON.stringify(req.body));
+
   const body = req.body || {};
 
-  // ── WEBHOOK: Telegram envía POST cuando el usuario escribe al bot
+  // WEBHOOK from Telegram (has body.message)
   if (body.message) {
-    const msg = body.message;
-    const chatId = msg.chat?.id;
-    const text = msg.text || '';
-    const nombre = msg.chat?.first_name || 'estudiante';
+    const chatId = body.message?.chat?.id;
+    const text = body.message?.text || '';
+    const nombre = body.message?.chat?.first_name || 'estudiante';
+    console.log('Webhook message from chatId:', chatId, 'text:', text);
 
     if (text === '/start' && chatId) {
-      // Leer token desde variable de entorno o desde query param
-      const botToken = process.env.TELEGRAM_BOT_TOKEN || req.query.token;
-
+      const botToken = process.env.TELEGRAM_BOT_TOKEN;
       if (botToken) {
-        await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+        const reply = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             chat_id: chatId,
-            parse_mode: 'MarkdownV2',
-            text: `👋 Hola *${nombre}*\\!\n\nBienvenido al bot de la *Sala STEAM · Salón 117 · UIS*\\.\n\n✅ Tu *Chat ID* es:\n\n\`${chatId}\`\n\n📋 Cópialo y pégalo en el campo *"Chat ID de Telegram"* del formulario de solicitud\\.\n\n📍 _Universidad Industrial de Santander_`
+            text: `Hola ${nombre}!\n\nBienvenido al bot de la Sala STEAM Salon 117 UIS.\n\nTu Chat ID es: ${chatId}\n\nCopialo y pegalo en el formulario de solicitud de impresion.`
           })
         });
+        const replyData = await reply.json();
+        console.log('Start reply:', JSON.stringify(replyData));
       }
     }
     return res.status(200).json({ ok: true });
   }
 
-  // ── ENVÍO DE NOTIFICACIONES: la app llama aquí con POST
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
-
+  // SEND NOTIFICATION from the app (has chatId, message, botToken)
   const { chatId, message, botToken } = body;
+
+  console.log('Notification request - chatId:', chatId, 'hasMessage:', !!message, 'hasToken:', !!botToken);
+
   if (!chatId || !message || !botToken) {
-    return res.status(400).json({ error: 'Faltan: chatId, message, botToken' });
+    console.log('Missing fields');
+    return res.status(400).json({ error: 'Faltan campos: chatId=' + chatId + ' message=' + !!message + ' botToken=' + !!botToken });
   }
 
   try {
-    const r = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+    const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
+    console.log('Calling Telegram API...');
+
+    const r = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chat_id: String(chatId).trim(), text: message })
+      body: JSON.stringify({
+        chat_id: String(chatId).trim(),
+        text: String(message)
+      })
     });
+
     const data = await r.json();
     console.log('Telegram response:', JSON.stringify(data));
-    if (!data.ok) return res.status(400).json({ error: data.description, detail: data });
-    return res.status(200).json({ success: true, messageId: data.result?.message_id, telegramResponse: data });
+
+    if (!data.ok) {
+      return res.status(400).json({ error: data.description, detail: data });
+    }
+
+    return res.status(200).json({ success: true, messageId: data.result.message_id });
   } catch (err) {
+    console.log('Fetch error:', err.message);
     return res.status(500).json({ error: err.message });
   }
 }
