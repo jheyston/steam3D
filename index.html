@@ -201,9 +201,8 @@ select option{background:var(--bg2)}
     </div>
 
     <div class="sb-sec">
-      <div class="sb-sec-t"><i class="ti ti-mail"></i> Gmail — Correos reales</div>
-      <div class="sb-f"><label>Tu correo Gmail</label><input id="cfg-guser" placeholder="jheyston.omar@gmail.com"></div>
-      <div class="sb-f"><label>Contraseña de aplicación Gmail</label><input type="password" id="cfg-gpass" placeholder="xxxx xxxx xxxx xxxx"><div class="sb-hint">No es tu contraseña normal. Ve a myaccount.google.com → Seguridad → Contraseñas de aplicación</div></div>
+      <div class="sb-sec-t"><i class="ti ti-brand-telegram"></i> Telegram — Notificaciones gratis</div>
+      <div class="sb-f"><label>Bot Token (de @BotFather)</label><input type="password" id="cfg-tgtoken" placeholder="7841234567:AAHxxxxxxxxxxxxxxxxxxxxxxxx"><div class="sb-hint">Abre @BotFather en Telegram → /newbot → copia el token</div></div>
     </div>
 
     <div class="sb-sec">
@@ -241,13 +240,13 @@ select option{background:var(--bg2)}
 
 <div class="mo" id="m-notif">
   <div class="mdl">
-    <div class="mh"><span class="mt"><i class="ti ti-bell-ringing" style="color:var(--warn)"></i> Enviar Notificación por Correo</span><button class="btn bts sm ic" onclick="cM('m-notif')"><i class="ti ti-x"></i></button></div>
+    <div class="mh"><span class="mt"><i class="ti ti-brand-telegram" style="color:#2AABEE"></i> Enviar Notificación por Telegram</span><button class="btn bts sm ic" onclick="cM('m-notif')"><i class="ti ti-x"></i></button></div>
     <div class="ff"><label>Solicitud</label><select id="n-sol"></select></div>
     <div class="ff"><label>Tipo</label><select id="n-tipo" onchange="setNMsg()"><option value="listo">Lista para recoger</option><option value="inicio">Impresión iniciada</option><option value="turno">Tu turno se acerca (30 min)</option><option value="problema">Problema con tu impresión</option><option value="custom">Mensaje personalizado</option></select></div>
     <div class="ff"><label>Mensaje (preview del correo)</label><textarea id="n-msg" rows="4"></textarea></div>
     <div style="display:flex;gap:8px;justify-content:flex-end">
       <button class="btn bts" onclick="cM('m-notif')">Cancelar</button>
-      <button class="btn btp" id="btn-sn" onclick="doSendNotif()"><i class="ti ti-send"></i> Enviar correo real</button>
+      <button class="btn btp" id="btn-sn" onclick="doSendNotif()"><i class="ti ti-send"></i> Enviar por Telegram</button>
     </div>
   </div>
 </div>
@@ -483,7 +482,14 @@ select option{background:var(--bg2)}
     <div style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Datos personales</div>
     <div class="fr"><div><label>Nombre completo *</label><input id="f-nombre" placeholder="Laura Pérez García"></div><div><label>Correo institucional UIS *</label><input type="email" id="f-email" placeholder="l.perez@correo.uis.edu.co"></div></div>
     <div class="fr"><div><label>Código de estudiante *</label><input id="f-codigo" placeholder="2022035478"></div><div><label>Programa académico</label><input id="f-prog" placeholder="Ing. Mecatrónica"></div></div>
-    <div class="fr" style="margin-bottom:18px"><div><label>Materia / Proyecto</label><input id="f-materia" placeholder="Diseño de Máquinas"></div><div><label>Docente</label><input id="f-docente" placeholder="Dr. Carlos Ramírez"></div></div>
+    <div class="fr" style="margin-bottom:4px"><div><label>Materia / Proyecto</label><input id="f-materia" placeholder="Diseño de Máquinas"></div><div><label>Docente</label><input id="f-docente" placeholder="Dr. Carlos Ramírez"></div></div>
+    <div class="ff">
+      <label><i class="ti ti-brand-telegram" style="color:#2AABEE" aria-hidden="true"></i> Tu Chat ID de Telegram <span style="color:var(--t3);font-weight:400">(para recibir notificaciones)</span></label>
+      <input id="f-tgid" placeholder="Ej: 123456789">
+      <div style="font-size:11px;color:var(--t3);margin-top:4px;line-height:1.6">
+        Ábrele al bot <strong id="bot-name-hint">@steam3d_uis_bot</strong> en Telegram y escríbele <code style="font-family:var(--mono);background:var(--bg3);padding:1px 5px;border-radius:4px">/start</code> — él te responde con tu Chat ID.
+      </div>
+    </div>
     <div style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Detalles de la impresión</div>
     <div class="fr"><div><label>Material *</label><select id="f-material"><option>PLA</option><option>ABS</option><option>PETG</option><option>TPU (Flexible)</option></select></div><div><label>Fecha límite que necesitas *</label><input type="date" id="f-deadline"></div></div>
     <div class="fr"><div><label>Gramos estimados</label><input type="number" id="f-gramos" placeholder="50" min="1" oninput="updCosto()"></div><div><label>Tiempo estimado (horas)</label><input type="number" id="f-horas" placeholder="3" min="0.5" step="0.5"></div></div>
@@ -527,7 +533,7 @@ select option{background:var(--bg2)}
 
 <script>
 // ── STATE ──
-let CFG={sbUrl:'',sbKey:'',gmailUser:'',gmailPass:'',adminPw:'',cam1:'',cam2:'',pg:120,mg:10,demo:false};
+let CFG={sbUrl:'',sbKey:'',tgToken:'',adminPw:'',cam1:'',cam2:'',pg:120,mg:10,demo:false};
 let SB=null,reviewId=null,selFile=null,curFilter='todas';
 let PRINTERS=[{id:1,name:'Creality Hi #1',status:'idle',job:null,pr:0},{id:2,name:'Creality Hi #2',status:'idle',job:null,pr:0}];
 let INV=[{c:'#e5e5e5',n:'PLA Blanco',s:840},{c:'#111',n:'PLA Negro',s:620},{c:'#6b7280',n:'PLA Gris',s:410},{c:'#ef4444',n:'PLA Rojo',s:210},{c:'#3b82f6',n:'PLA Azul',s:380},{c:'#f59e0b',n:'ABS Negro',s:150}];
@@ -555,8 +561,8 @@ function cM(id){document.getElementById(id).classList.remove('open')}
 function saveConfig(){
   const url=document.getElementById('cfg-sbu').value.trim();
   const key=document.getElementById('cfg-sbk').value.trim();
-  const rk=document.getElementById('cfg-guser').value.trim();
-  const from=document.getElementById('cfg-gpass').value.trim();
+  const rk=document.getElementById('cfg-tgtoken').value.trim();
+  const from='';
   const pw=document.getElementById('cfg-pw').value;
   const c1=document.getElementById('cfg-c1').value.trim();
   const c2=document.getElementById('cfg-c2').value.trim();
@@ -564,7 +570,7 @@ function saveConfig(){
   if(!url||!key){st.textContent='Supabase URL y Key son obligatorios';st.className='sb-st err';return}
   if(!pw||pw.length<6){st.textContent='Contraseña mínimo 6 caracteres';st.className='sb-st err';return}
   st.textContent='Conectando...';st.className='sb-st';
-  CFG={sbUrl:url,sbKey:key,gmailUser:rk,gmailPass:from,adminPw:pw,cam1:c1,cam2:c2,pg:120,mg:10,demo:false};
+  CFG={sbUrl:url,sbKey:key,tgToken:rk,adminPw:pw,cam1:c1,cam2:c2,pg:120,mg:10,demo:false};
   localStorage.setItem('s3d',JSON.stringify(CFG));
   initSB();
   SB.from('solicitudes').select('id').limit(1).then(({error})=>{
@@ -816,9 +822,9 @@ async function abrirRev(id){
 async function adminAcc(acc){
   const imp=document.getElementById('rev-imp')?.value||PRINTERS[0].name;
   let upd={};
-  if(acc==='aprobar'){upd={status:'printing',impresora:imp};const p=PRINTERS.find(x=>x.name===imp);if(p){p.status='printing';p.pr=5}await sendEmail(reviewId,'inicio')}
+  if(acc==='aprobar'){upd={status:'printing',impresora:imp};const p=PRINTERS.find(x=>x.name===imp);if(p){p.status='printing';p.pr=5}await sendTelegram(reviewId,'inicio')}
   else if(acc==='queue'){upd={status:'pending'}}
-  else{upd={status:'cancelled'};await sendEmail(reviewId,'rechazado')}
+  else{upd={status:'cancelled'};await sendTelegram(reviewId,'rechazado')}
   const{error}=await dbUpd('solicitudes',reviewId,upd);
   if(error){toast('Error','e',error.message);return}
   cM('m-rev');renderPrinters();await loadAll();await loadSols();
@@ -827,57 +833,39 @@ async function adminAcc(acc){
 async function chSt(id,ns){
   const{error}=await dbUpd('solicitudes',id,{status:ns});
   if(error){toast('Error','e',error.message);return}
-  if(ns==='ready')await sendEmail(id,'listo');
+  if(ns==='ready')await sendTelegram(id,'listo');
   toast(`→ ${ns}`,'s');
   await loadAll();await loadSols();
 }
 
 // ── ENVIAR CORREOS VÍA RESEND ──
-async function sendEmail(id,tipo,custom=''){
+async function sendTelegram(id,tipo,customMsg=''){
   const all=await getSols();
   const s=all.find(x=>x.id===id);
   if(!s)return;
-  const tpls={
-    inicio:{sub:'Tu impresión 3D comenzó — Sala STEAM UIS Salón 117',html:`<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto"><div style="background:#c00;padding:20px 24px;border-radius:8px 8px 0 0"><h2 style="color:#fff;margin:0;font-size:18px">STEAM 3D Manager · Salón 117 UIS</h2></div><div style="background:#f9f9f9;padding:24px;border-radius:0 0 8px 8px;border:1px solid #eee"><p style="font-size:15px">Hola <strong>${s.nombre}</strong>,</p><p style="font-size:14px;color:#555;line-height:1.7">Tu impresión 3D ha comenzado en <strong>${s.impresora||'la impresora asignada'}</strong>.</p><div style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:16px;margin:16px 0"><div style="font-size:13px;color:#888">Archivo</div><div style="font-size:15px;font-weight:700">${s.archivo||'—'}</div><div style="font-size:13px;color:#888;margin-top:8px">Material: ${s.material} · ${s.gramos||0}g · Costo: <strong style="color:#c00">${fmt(s.costo||0)}</strong></div></div><p style="font-size:14px;color:#555">Te notificaremos cuando esté lista para recoger. Lleva tu carné.</p><div style="background:#c00;color:#fff;padding:10px 16px;border-radius:6px;font-size:13px;margin-top:12px"><strong>Sala STEAM · Salón 117 · Universidad Industrial de Santander</strong></div></div></div>`},
-    listo:{sub:'¡Tu impresión 3D está lista! — Sala STEAM UIS Salón 117',html:`<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto"><div style="background:#10b981;padding:20px 24px;border-radius:8px 8px 0 0"><h2 style="color:#fff;margin:0">¡Tu impresión está lista para recoger!</h2></div><div style="background:#f9f9f9;padding:24px;border-radius:0 0 8px 8px;border:1px solid #eee"><p style="font-size:15px">Hola <strong>${s.nombre}</strong>,</p><div style="background:#d1fae5;border:1px solid #6ee7b7;border-radius:8px;padding:16px;margin:16px 0"><div style="font-size:16px;font-weight:700;color:#065f46">Pasa al Salón 117 con tu carné UIS</div><div style="font-size:13px;color:#047857;margin-top:6px">Horario: Lunes a viernes · 8:00 am – 6:00 pm</div><div style="font-size:14px;font-weight:700;color:#047857;margin-top:4px">Costo a pagar: ${fmt(s.costo||0)} COP</div></div><p style="font-size:14px;color:#555">Archivo: <strong>${s.archivo||'—'}</strong> · Material: ${s.material}</p><div style="background:#c00;color:#fff;padding:10px 16px;border-radius:6px;font-size:13px"><strong>Sala STEAM · Salón 117 · Universidad Industrial de Santander</strong></div></div></div>`},
-    rechazado:{sub:'Solicitud rechazada — Sala STEAM UIS',html:`<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto"><div style="background:#ef4444;padding:20px 24px;border-radius:8px 8px 0 0"><h2 style="color:#fff;margin:0">Solicitud rechazada</h2></div><div style="background:#f9f9f9;padding:24px;border-radius:0 0 8px 8px;border:1px solid #eee"><p>Hola <strong>${s.nombre}</strong>, tu solicitud para <strong>${s.archivo||'—'}</strong> no pudo ser procesada en este momento.</p><p style="font-size:14px;color:#555">Acércate al Salón 117 o responde este correo para más información.</p><div style="background:#c00;color:#fff;padding:10px 16px;border-radius:6px;font-size:13px"><strong>Sala STEAM · Salón 117 · UIS</strong></div></div></div>`},
-    turno:{sub:'Tu turno se acerca — Sala STEAM UIS Salón 117',html:`<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto"><div style="background:#f59e0b;padding:20px 24px;border-radius:8px 8px 0 0"><h2 style="color:#fff;margin:0">Tu turno se acerca</h2></div><div style="background:#f9f9f9;padding:24px;border-radius:0 0 8px 8px;border:1px solid #eee"><p>Hola <strong>${s.nombre}</strong>, en aproximadamente <strong>30 minutos</strong> comenzará tu impresión en el Salón 117.</p><div style="background:#c00;color:#fff;padding:10px 16px;border-radius:6px;font-size:13px"><strong>Sala STEAM · Salón 117 · UIS</strong></div></div></div>`},
-    custom:{sub:'Mensaje de la Sala STEAM — Salón 117 UIS',html:`<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto"><div style="background:#7c3aed;padding:20px 24px;border-radius:8px 8px 0 0"><h2 style="color:#fff;margin:0">Sala STEAM · Salón 117 UIS</h2></div><div style="background:#f9f9f9;padding:24px;border-radius:0 0 8px 8px;border:1px solid #eee"><p>Hola <strong>${s.nombre}</strong>,</p><p style="font-size:14px;color:#555;line-height:1.7">${custom}</p><div style="background:#c00;color:#fff;padding:10px 16px;border-radius:6px;font-size:13px"><strong>Sala STEAM · Salón 117 · UIS</strong></div></div></div>`}
+  const chatId=s.telegram_id||'';
+  if(!chatId){toast('Sin Chat ID de Telegram','w',s.nombre+' no ingresó su Chat ID');return}
+  const msgs={
+    inicio:`🖨 <b>¡Tu impresión comenzó!</b>\n\nHola ${s.nombre}, tu modelo <b>${s.archivo}</b> está imprimiéndose en <b>${s.impresora||'la impresora asignada'}</b>.\n\nMaterial: ${s.material} · ${s.gramos||0}g\nCosto: $${(s.costo||0).toLocaleString('es-CO')} COP\n\nTe avisamos cuando esté lista 🎉\n\n📍 <i>Sala STEAM · Salón 117 · UIS</i>`,
+    listo:`✅ <b>¡Tu impresión está lista!</b>\n\nHola ${s.nombre}, ya puedes recoger <b>${s.archivo}</b>.\n\n📍 <b>Salón 117</b> · Lun–Vie 8am–6pm\n💳 Trae tu carné UIS\n💰 Costo: <b>$${(s.costo||0).toLocaleString('es-CO')} COP</b>\n\n<i>Sala STEAM · UIS</i>`,
+    rechazado:`❌ <b>Solicitud rechazada</b>\n\nHola ${s.nombre}, tu solicitud de <b>${s.archivo}</b> no pudo procesarse.\n\nAcércate al Salón 117 para más info.\n\n<i>Sala STEAM · UIS</i>`,
+    turno:`⏰ <b>Tu turno se acerca</b>\n\nHola ${s.nombre}, en ~30 minutos comenzará tu impresión en el Salón 117.\n\n<i>Sala STEAM · UIS</i>`,
+    problema:`⚠️ <b>Problema con tu impresión</b>\n\nHola ${s.nombre}, hubo un inconveniente con <b>${s.archivo}</b>.\n\nAcércate al Salón 117.\n\n<i>Sala STEAM · UIS</i>`,
+    custom:`📬 <b>Sala STEAM · Salón 117 UIS</b>\n\nHola ${s.nombre},\n\n${customMsg}`
   };
-  const tpl=tpls[tipo];if(!tpl)return;
-  if(!CFG.demo&&SB)await SB.from('notificaciones').insert({solicitud_id:String(id),tipo:tpl.sub,mensaje:tpl.sub});
-  if(!CFG.gmailUser||!CFG.gmailPass||CFG.demo){
-    toast(CFG.demo?'Correo simulado (modo demo)':'Configura Gmail en ajustes','i',s.email);
-    return;
-  }
+  const message=msgs[tipo]||msgs.custom;
+  if(!CFG.demo&&SB)await SB.from('notificaciones').insert({solicitud_id:String(id),tipo,mensaje:message.substring(0,200)});
+  if(!CFG.tgToken||CFG.demo){toast(CFG.demo?'Telegram simulado (demo)':'Configura el Bot Token en ⚙️','i',s.nombre);return}
   try{
-    const base=window.location.origin;
-    const r=await fetch(base+'/api/send-email',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        to:s.email,
-        subject:tpl.sub,
-        html:tpl.html,
-        gmailUser:CFG.gmailUser,
-        gmailPass:CFG.gmailPass
-      })
+    const r=await fetch(window.location.origin+'/api/send-telegram',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({chatId,message,botToken:CFG.tgToken})
     });
-    if(!r.ok){
-      const txt=await r.text();
-      toast('Error en función serverless','e',r.status+' — '+txt.substring(0,120));
-      return;
-    }
+    if(!r.ok){const txt=await r.text();toast('Error serverless','e',r.status+' · '+txt.substring(0,100));return}
     const d=await r.json();
-    if(d.success||d.messageId){
-      toast('Correo enviado a '+s.email,'s',tpl.sub);
-    } else {
-      toast('Error enviando','e',d.error||JSON.stringify(d).substring(0,120));
-    }
-  }catch(err){
-    const tried=window.location.origin+'/api/send-email';
-    toast('No se encontró la función','e',tried+' · '+err.message);
-  }
+    if(d.success){toast('Telegram enviado a '+s.nombre,'s','Chat: '+chatId)}
+    else{toast('Error Telegram','e',d.error||JSON.stringify(d).substring(0,100))}
+  }catch(err){toast('No se encontró /api/send-telegram','e',err.message)}
 }
 
 // ── NOTIF MODAL ──
@@ -888,14 +876,14 @@ async function openNM(){
   sols.filter(s=>!['done','cancelled'].includes(s.status)).forEach(s=>{sel.innerHTML+=`<option value="${s.id}">${s.nombre} · ${s.archivo||'—'} (${s.status})</option>`});
   setNMsg();oM('m-notif');
 }
-function setNMsg(){const t=document.getElementById('n-tipo').value;const m={listo:'Tu impresión 3D está lista. Pasa al Salón 117 con tu carné UIS. Horario: lun–vie 8am–6pm.',inicio:'Tu impresión 3D ha comenzado en el Salón 117. Te avisaremos cuando esté lista.',turno:'Tu turno se acerca. En ~30 min comenzará tu impresión en el Salón 117.',problema:'Hubo un inconveniente con tu solicitud. Acércate al Salón 117 o responde este correo.',custom:''};document.getElementById('n-msg').value=m[t]||''}
+function setNMsg(){const t=document.getElementById('n-tipo').value;const m={listo:'Tu impresión 3D está lista. Pasa al Salón 117 con tu carné UIS. Lun–Vie 8am–6pm.',inicio:'Tu impresión 3D ha comenzado en el Salón 117. Te avisaremos cuando esté lista.',turno:'Tu turno se acerca. En ~30 min comenzará tu impresión en el Salón 117.',problema:'Hubo un inconveniente con tu solicitud. Acércate al Salón 117.',custom:''};document.getElementById('n-msg').value=m[t]||''}
 async function doSendNotif(){
   const id=document.getElementById('n-sol').value;
   const tipo=document.getElementById('n-tipo').value;
   const msg=document.getElementById('n-msg').value.trim();
   if(!id){toast('Selecciona una solicitud','w');return}
   if(!msg){toast('El mensaje no puede estar vacío','w');return}
-  await sendEmail(id,tipo,msg);cM('m-notif');await loadDashNotifs();
+  await sendTelegram(id,tipo,msg);cM('m-notif');await loadDashNotifs();
 }
 
 // ── COMPRA ──
@@ -943,15 +931,16 @@ async function envSol(){
   const gramos=parseInt(document.getElementById('f-gramos').value)||20;
   const horas=parseFloat(document.getElementById('f-horas').value)||2;
   const obs=document.getElementById('f-obs').value;
+  const tgid=document.getElementById('f-tgid').value.trim();
   if(!nombre||!email||!codigo){toast('Nombre, correo y código son obligatorios','e');return}
   if(!dl){toast('Indica la fecha límite','e');return}
   if(!selFile){toast('Sube tu archivo STL','e');return}
   const btn=document.getElementById('btn-env');btn.disabled=true;btn.innerHTML='<span class="spin"></span> Enviando...';
   const costo=calcCosto(gramos);
-  const{data,error}=await dbIns('solicitudes',{nombre,email,codigo,programa:prog,materia:mat,docente:doc,archivo:selFile.name,file_size:selFile.size,material,deadline:dl,gramos,horas,obs,costo,status:'review'});
+  const{data,error}=await dbIns('solicitudes',{nombre,email,codigo,programa:prog,materia:mat,docente:doc,archivo:selFile.name,file_size:selFile.size,material,deadline:dl,gramos,horas,obs,costo,status:'review',telegram_id:tgid});
   btn.disabled=false;btn.innerHTML='<i class="ti ti-send"></i> Enviar Solicitud';
   if(error){toast('Error enviando','e',error.message);return}
-  ['f-nombre','f-email','f-codigo','f-prog','f-materia','f-docente','f-obs'].forEach(id=>document.getElementById(id).value='');
+  ['f-nombre','f-email','f-codigo','f-prog','f-materia','f-docente','f-obs','f-tgid'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('f-deadline').value='';document.getElementById('f-gramos').value='';document.getElementById('f-horas').value='';
   rmf({stopPropagation:()=>{}});
   toast('Solicitud enviada','s', CFG.demo ? 'Modo demo: guardada en memoria (no persiste al recargar)' : 'Recibirás un correo cuando sea revisada');
@@ -1052,8 +1041,7 @@ function apCam(n){
       CFG={...CFG,...c};
       document.getElementById('cfg-sbu').value=CFG.sbUrl||'';
       document.getElementById('cfg-sbk').value=CFG.sbKey||'';
-      document.getElementById('cfg-guser').value=CFG.gmailUser||'';
-      document.getElementById('cfg-gpass').value=CFG.gmailPass||'';
+      document.getElementById('cfg-tgtoken').value=CFG.tgToken||'';
       document.getElementById('cfg-pw').value=CFG.adminPw||'';
       document.getElementById('cfg-c1').value=CFG.cam1||'';
       document.getElementById('cfg-c2').value=CFG.cam2||'';
