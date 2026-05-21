@@ -447,7 +447,7 @@ select option{background:#fff;color:var(--text)}
   <div class="g2">
     <div class="card card-c" style="display:flex;flex-direction:column;align-items:center;gap:16px;padding:28px">
       <div class="ct" style="align-self:flex-start"><i class="ti ti-qrcode" style="color:var(--accent)"></i> Código QR del Salón 117</div>
-      <div style="background:#ffffff;padding:16px;border-radius:12px;display:inline-block"><canvas id="qrc"></canvas></div>
+      <div style="background:#ffffff;padding:16px;border-radius:12px;display:inline-block;line-height:0"><img id="qrc" width="180" height="180" alt="Codigo QR Salon 117 UIS" style="display:block"></div>
       <div style="font-family:var(--mono);font-size:11px;color:var(--accent);word-break:break-all;padding:10px;background:var(--bg3);border-radius:var(--r2);width:100%;text-align:center" id="qru">—</div>
       <div style="display:flex;gap:8px"><button class="btn btp sm" onclick="genQR()"><i class="ti ti-refresh"></i> Nuevo QR</button><button class="btn bts sm" onclick="copyQR()"><i class="ti ti-copy"></i> Copiar URL</button></div>
       <div style="font-size:11px;color:var(--t3);text-align:center;line-height:1.7">Imprime este QR y pégalo en la puerta del Salón 117.<br>Los estudiantes lo escanean para solicitar impresiones.</div>
@@ -550,7 +550,6 @@ select option{background:#fff;color:var(--text)}
 </div><!-- /main -->
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js" onload="if(window._qrPending){genQR();window._qrPending=false}"></script>
 <script>
 // ── STATE ──
 let CFG={sbUrl:'',sbKey:'',tgToken:'',adminPw:'',cam1:'',cam2:'',pg:300,mg:5,demo:false};
@@ -1060,10 +1059,15 @@ function aInv(i,d){INV[i].s=Math.max(0,INV[i].s+d);renderInv();toast(d>0?`+1kg $
 // ── QR ──
 function genQR(){
   const url=window.location.href.split('?')[0]+'?view=student';
-  const el=document.getElementById('qru');if(el)el.textContent=url;
-  const c=document.getElementById('qrc');if(!c)return;
-  if(typeof QRCode==='undefined'){window._qrPending=true;return}
-  QRCode.toCanvas(c,url,{width:180,margin:2,color:{dark:'#000000',light:'#ffffff'}},function(err){if(err)console.warn('QR:',err)});
+  const elUrl=document.getElementById('qru');if(elUrl)elUrl.textContent=url;
+  const img=document.getElementById('qrc');if(!img)return;
+  // Usar Google Charts API — funciona siempre sin librerías
+  const encoded=encodeURIComponent(url);
+  img.src='https://chart.googleapis.com/chart?cht=qr&chs=180x180&chl='+encoded+'&choe=UTF-8&chld=M|2';
+  img.onerror=function(){
+    // Fallback: QR code generator alternativo
+    img.src='https://api.qrserver.com/v1/create-qr-code/?size=180x180&data='+encoded;
+  };
 }
 function copyQR(){navigator.clipboard.writeText(document.getElementById('qru')?.textContent||'').then(()=>toast('URL copiada','s'))}
 
