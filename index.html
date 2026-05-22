@@ -551,14 +551,14 @@ select option{background:#fff;color:var(--text)}
 
 </div><!-- /main -->
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js" onload="initSB();if(window._sbPending){window._sbPending();window._sbPending=null}"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js" onload="window._sbLoaded=true;if(window._sbReady)window._sbReady()"></script>
 <script>
 // ── STATE ──
 let CFG={sbUrl:'https://mjydxkajuyndjqlqqodv.supabase.co',sbKey:'sb_publishable_CltMSThxXlP8y-scab3sWA_zKpZBAw9',tgToken:'',adminPw:'',cam1:'',cam2:'',portalUrl:'https://steam3-d.vercel.app',pg:300,mg:5,demo:false};
 let SB=null,reviewId=null,selFile=null,curFilter='todas';
 // Inicializar Supabase inmediatamente con credenciales fijas
 function initSB(){
-  if(CFG.sbUrl&&CFG.sbKey&&window.supabase){
+  if(CFG.sbUrl&&CFG.sbKey&&window.supabase&&!SB){
     SB=window.supabase.createClient(CFG.sbUrl,CFG.sbKey);
     console.log('Supabase conectado');
   }
@@ -566,9 +566,11 @@ function initSB(){
 
 async function waitSB(){
   if(SB)return SB;
+  // Si Supabase ya cargó, inicializar ahora
+  if(window._sbLoaded){initSB();return SB;}
+  // Si no, esperar a que cargue
   return new Promise(resolve=>{
-    if(window.supabase){initSB();resolve(SB);}
-    else{window._sbPending=()=>{initSB();resolve(SB);};}
+    window._sbReady=()=>{initSB();resolve(SB);};
   });
 }
 let PRINTERS=[{id:1,name:'Creality Hi #1',status:'idle',job:null,pr:0},{id:2,name:'Creality Hi #2',status:'idle',job:null,pr:0}];
@@ -1140,6 +1142,10 @@ document.getElementById('btn-skip')?.addEventListener('click', skipSetup);
 document.getElementById('btn-login')?.addEventListener('click', doLogin);
 document.getElementById('logout-btn')?.addEventListener('click', logout);
 document.getElementById('login-pw')?.addEventListener('keydown', e=>{ if(e.key==='Enter') doLogin(); });
+
+// Intentar conectar Supabase con credenciales por defecto
+if(window._sbLoaded) initSB();
+else window._sbReady=()=>initSB();
 
 (function(){
   const saved=localStorage.getItem('s3d');
