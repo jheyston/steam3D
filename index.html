@@ -551,7 +551,7 @@ select option{background:#fff;color:var(--text)}
 
 </div><!-- /main -->
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js" onload="initSB();if(window._sbPending){window._sbPending();window._sbPending=null}"></script>
 <script>
 // ── STATE ──
 let CFG={sbUrl:'https://mjydxkajuyndjqlqqodv.supabase.co',sbKey:'sb_publishable_CltMSThxXlP8y-scab3sWA_zKpZBAw9',tgToken:'',adminPw:'',cam1:'',cam2:'',portalUrl:'https://steam3-d.vercel.app',pg:300,mg:5,demo:false};
@@ -560,7 +560,16 @@ let SB=null,reviewId=null,selFile=null,curFilter='todas';
 function initSB(){
   if(CFG.sbUrl&&CFG.sbKey&&window.supabase){
     SB=window.supabase.createClient(CFG.sbUrl,CFG.sbKey);
+    console.log('Supabase conectado');
   }
+}
+
+async function waitSB(){
+  if(SB)return SB;
+  return new Promise(resolve=>{
+    if(window.supabase){initSB();resolve(SB);}
+    else{window._sbPending=()=>{initSB();resolve(SB);};}
+  });
 }
 let PRINTERS=[{id:1,name:'Creality Hi #1',status:'idle',job:null,pr:0},{id:2,name:'Creality Hi #2',status:'idle',job:null,pr:0}];
 let INV=[{c:'#e5e5e5',n:'PLA Blanco',s:840},{c:'#111',n:'PLA Negro',s:620},{c:'#6b7280',n:'PLA Gris',s:410},{c:'#ef4444',n:'PLA Rojo',s:210},{c:'#3b82f6',n:'PLA Azul',s:380},{c:'#f59e0b',n:'ABS Negro',s:150}];
@@ -694,19 +703,13 @@ function sS(pg,btn){
 // ── DATA ──
 let demoSols=[];  // solicitudes creadas en demo/live sin SB
 async function getSols(filter){
-  if(CFG.demo){
-    const base=getDemoData();
-    const all=[...base,...demoSols];
-    return(!filter||filter==='todas')?all:all.filter(s=>s.status===filter);
-  }
-  if(!SB){
-    toast('Sin conexión a Supabase. Verifica la configuración.','w');
-    return[...demoSols];
-  }
-  let q=SB.from('solicitudes').select('*').order('created_at',{ascending:true});
+  if(CFG.demo){const base=getDemoData();const all=[...base,...demoSols];return(!filter||filter==='todas')?all:all.filter(s=>s.status===filter);}
+  const db=await waitSB();
+  if(!db){const all=[...demoSols];return(!filter||filter==='todas')?all:all.filter(s=>s.status===filter);}
+  let q=db.from('solicitudes').select('*').order('created_at',{ascending:true});
   if(filter&&filter!=='todas')q=q.eq('status',filter);
   const{data,error}=await q;
-  if(error){toast('Error BD','e',error.message);return[]}
+  if(error){toast('Error BD','e',error.message);return[];}
   return data||[];
 }
 function getDemoData(f){
@@ -723,23 +726,20 @@ function getDemoData(f){
 }
 async function dbIns(table,row){
   const newRow={id:'local-'+Date.now(),...row,created_at:new Date().toISOString()};
-  if(CFG.demo||!SB){
-    if(table==='solicitudes')demoSols.push(newRow);
-    return{data:[newRow],error:null};
-  }
-  return await SB.from(table).insert(row).select();
+  if(CFG.demo){if(table==='solicitudes')demoSols.push(newRow);return{data:[newRow],error:null};}
+  const db=await waitSB();
+  if(!db){if(table==='solicitudes')demoSols.push(newRow);return{data:[newRow],error:{message:'Sin conexión a Supabase'}};}
+  return await db.from(table).insert(row).select();
 }
 async function dbUpd(table,id,upd){
-  // Actualizar en memoria también (demo o solicitudes locales)
   if(table==='solicitudes'){
-    const idx=demoSols.findIndex(s=>s.id===id);
-    if(idx>=0){Object.assign(demoSols[idx],upd);}
-    // También actualizar datos demo en memoria
-    const di=_demoCache.findIndex(s=>s.id===id);
-    if(di>=0)Object.assign(_demoCache[di],upd);
+    const idx=demoSols.findIndex(s=>s.id===id);if(idx>=0)Object.assign(demoSols[idx],upd);
+    const di=_demoCache.findIndex(s=>s.id===id);if(di>=0)Object.assign(_demoCache[di],upd);
   }
-  if(CFG.demo||!SB)return{error:null};
-  return await SB.from(table).update(upd).eq('id',id);
+  if(CFG.demo)return{error:null};
+  const db=await waitSB();
+  if(!db)return{error:null};
+  return await db.from(table).update(upd).eq('id',id);
 }
 let _demoCache=[];
 
