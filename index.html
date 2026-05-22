@@ -798,13 +798,16 @@ async function loadFin(){
 function renderColaTable(data){
   const tbody=document.getElementById('tb-cola');
   const fil=curFilter==='todas'?data:data.filter(s=>s.status===curFilter);
+  // SIEMPRE ordenar por fecha de llegada (created_at ascendente)
   const sorted=[...fil].sort((a,b)=>new Date(a.created_at)-new Date(b.created_at));
   if(!sorted.length){tbody.innerHTML='<tr><td colspan="8" class="te">Sin solicitudes para mostrar</td></tr>';return}
   const sb={review:'<span class="badge br"><i class="ti ti-eye"></i> Por revisar</span>',pending:'<span class="badge bp2"><i class="ti ti-clock"></i> En cola</span>',printing:'<span class="badge bi"><i class="ti ti-printer"></i> Imprimiendo</span>',ready:'<span class="badge bg3"><i class="ti ti-check"></i> Lista</span>',done:'<span class="badge bd2">Entregada</span>',cancelled:'<span class="badge bc">Cancelada</span>'};
-  let pos=0;
+  // Calcular posición real en la cola (solo pending y printing, en orden de llegada)
+  const colaReal=[...data].filter(s=>['pending','printing'].includes(s.status)).sort((a,b)=>new Date(a.created_at)-new Date(b.created_at));
   tbody.innerHTML=sorted.map(s=>{
     const inQ=['pending','printing'].includes(s.status);
-    if(inQ)pos++;
+    // Posición real = índice en la cola ordenada por llegada
+    const posReal=inQ?colaReal.findIndex(x=>x.id===s.id)+1:0;
     const dl=s.deadline?new Date(s.deadline+'T12:00:00'):null;
     const days=dl?Math.ceil((dl-new Date())/(86400000)):null;
     const dc=days!==null&&days<=2?'var(--danger)':days!==null&&days<=5?'var(--warn)':'var(--t2)';
@@ -813,12 +816,12 @@ function renderColaTable(data){
       s.status==='printing'?`<button class="btn btg sm" onclick="chSt('${s.id}','ready')"><i class="ti ti-check"></i> Lista</button>`:
       s.status==='ready'?`<button class="btn bts sm" onclick="chSt('${s.id}','done')"><i class="ti ti-package"></i> Entregar</button>`:'—';
     return`<tr>
-      <td><span style="font-family:var(--mono);font-size:12px;color:${inQ?'var(--warn)':'var(--t4)'}">${inQ?pos:'—'}</span></td>
-      <td><div style="display:flex;align-items:center;gap:8px"><div style="width:28px;height:28px;border-radius:50%;background:rgba(0,200,240,.15);color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">${ini(s.nombre)}</div><div><div style="font-size:13px;font-weight:600">${s.nombre}</div><div style="font-size:10px;color:var(--t3)">${s.codigo||s.email}</div></div></div></td>
+      <td><span style="font-family:var(--mono);font-size:13px;font-weight:700;color:${inQ?'var(--accent)':'var(--t4)'}">${inQ?'#'+posReal:'—'}</span></td>
+      <td><div style="display:flex;align-items:center;gap:8px"><div style="width:28px;height:28px;border-radius:50%;background:rgba(106,176,76,.15);color:var(--a2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">${ini(s.nombre)}</div><div><div style="font-size:13px;font-weight:600">${s.nombre}</div><div style="font-size:10px;color:var(--t3)">${s.codigo||s.email}</div></div></div></td>
       <td><div style="display:flex;align-items:center;gap:6px"><i class="ti ti-file-3d" style="color:var(--a3);font-size:14px"></i><div><div style="font-size:11px;font-family:var(--mono);max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${s.archivo||'—'}</div><div style="font-size:10px;color:var(--t3)">${s.gramos||0}g · ${s.horas||0}h</div></div></div></td>
-      <td><span class="badge bd2">${s.material||'—'}</span> ${s.modalidad==='filamento_propio'?'<span class="badge" style="background:rgba(45,106,79,.2);color:#52b788;font-size:9px">Filamento propio</span>':'<span class="badge" style="background:rgba(106,176,76,.12);color:#ff6b6b;font-size:9px">Filamento sala</span>'}</td>
+      <td><span class="badge bd2">${s.material||'—'}</span> ${s.modalidad==='filamento_propio'?'<span class="badge" style="background:rgba(45,106,79,.2);color:var(--a3);font-size:9px">Filamento propio</span>':'<span class="badge" style="background:rgba(106,176,76,.12);color:var(--a2);font-size:9px">Filamento sala</span>'}</td>
       <td style="font-size:12px;font-weight:600;color:${dc}">${s.deadline||'—'}${days!==null?`<span style="font-size:10px"> (${days}d)</span>`:''}</td>
-      <td style="font-family:var(--mono);font-weight:700;color:var(--a3)">${fmt(s.costo||0)}</td>
+      <td style="font-family:var(--mono);font-weight:700;color:var(--a2)">${s.costo>0?fmt(s.costo):'Gratis'}</td>
       <td>${sb[s.status]||s.status}</td>
       <td style="display:flex;gap:4px;flex-wrap:nowrap">${acts}</td>
     </tr>`;
